@@ -103,7 +103,7 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={clientId}>
       <Dashboard />
-      <AssignmentsTracker />
+      <AssignmentsTrackers />
     </GoogleOAuthProvider>
   );
 }
@@ -602,14 +602,14 @@ function AttendedClassesTracker({ user, idToken }) {
   );
 }
 
-function AssignmentsTracker({ user, idToken }) {
+function AssignmentsTrackers({ user, idToken }) {
   const [assignments, setAssignments] = useState([]);
   const [newAssignment, setNewAssignment] = useState({ name: '', due_date: '', completed: false });
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     if (!user || !idToken) return;
     setLoading(true);
-    fetch('/api/tracker', {
+    fetch('/api/trackers', {
       headers: { Authorization: `Bearer ${idToken}` },
     })
       .then(res => res.json())
@@ -626,7 +626,7 @@ function AssignmentsTracker({ user, idToken }) {
   const addAssignment = (e) => {
     e.preventDefault();
     if (!newAssignment.name.trim() || !newAssignment.due_date) return;
-    fetch('/api/tracker', {
+    fetch('/api/trackers', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -648,7 +648,7 @@ function AssignmentsTracker({ user, idToken }) {
   };
 
   const deleteAssignment = (id) => {
-    fetch(`/api/assignments/${id
+    fetch(`/api/trackers/${id
 }`, {
       method: 'DELETE',
       headers: {
