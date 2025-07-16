@@ -2,6 +2,8 @@ import { createClient } from '@libsql/client';
 import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
+  // Always disable caching for security
+  res.setHeader('Cache-Control', 'no-store');
   const db = createClient({
     url: process.env.TURSO_DATABASE_URL,
     authToken: process.env.TURSO_AUTH_TOKEN,
