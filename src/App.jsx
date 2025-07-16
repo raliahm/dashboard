@@ -48,11 +48,15 @@ function Dashboard() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: newItem.trim(), done: false, userId: user.sub })
     })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to add todo');
+        return res.json();
+      })
       .then(added => {
         setItems([...items, added]);
         setNewItem("");
-      });
+      })
+      .catch(err => alert(err.message));
   };
 
   const toggleDone = (id) => {
@@ -63,8 +67,12 @@ function Dashboard() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: item.text, done: !item.done, userId: user.sub })
     })
-      .then(res => res.json())
-      .then(updated => setItems(items.map(i => i.id === id ? updated : i)));
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to update todo');
+        return res.json();
+      })
+      .then(updated => setItems(items.map(i => i.id === id ? updated : i)))
+      .catch(err => alert(err.message));
   };
 
   const deleteItem = (id) => {
@@ -73,8 +81,12 @@ function Dashboard() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: user.sub })
     })
-      .then(res => res.json())
-      .then(() => setItems(items.filter(i => i.id !== id)));
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to delete todo');
+        return res.json();
+      })
+      .then(() => setItems(items.filter(i => i.id !== id)))
+      .catch(err => alert(err.message));
   };
 
   const updateItem = (id, newText) => {
@@ -85,8 +97,12 @@ function Dashboard() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: newText, done: item.done, userId: user.sub })
     })
-      .then(res => res.json())
-      .then(updated => setItems(items.map(i => i.id === id ? updated : i)));
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to update todo');
+        return res.json();
+      })
+      .then(updated => setItems(items.map(i => i.id === id ? updated : i)))
+      .catch(err => alert(err.message));
   };
 
   const doneCount = items.filter(item => item.done).length;
