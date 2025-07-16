@@ -1,19 +1,12 @@
 import { createClient } from '@libsql/client';
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "./auth/[...nextauth]"; // adjust import if needed
-
-const session = await getServerSession(req, res, authOptions);
-const userId = session?.user?.id;
-
-if (!userId) return res.status(401).json({ error: "Unauthorized" });
-
-const db = createClient({
-  url: process.env.TURSO_DATABASE_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN,
-});
 
 export default async function handler(req, res) {
+  const db = createClient({
+    url: process.env.TURSO_DATABASE_URL,
+    authToken: process.env.TURSO_AUTH_TOKEN,
+  });
+
   try {
     if (req.method === 'GET') {
       const result = await db.execute('SELECT * FROM todos ORDER BY id');
@@ -21,10 +14,11 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const { text, done } = req.body;
+      const { text, done, userId } = req.body;
+      if (!userId) return res.status(401).json({ error: 'Unauthorized' });
       const result = await db.execute({
-        sql: 'INSERT INTO todos (text, done) VALUES (?, ?) RETURNING *',
-        args: [text, done ? 1 : 0],
+        sql: 'INSERT INTO todos (text, done, user_id) VALUES (?, ?, ?) RETURNING *',
+        args: [text, done ? 1 : 0, userId],
       });
       return res.status(201).json(result.rows[0]);
     }
