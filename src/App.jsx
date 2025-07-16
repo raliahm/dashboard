@@ -5,7 +5,7 @@ function CalendarPicker() {
   const [accessToken, setAccessToken] = useState(null);
   const [calendarList, setCalendarList] = useState([]);
   const [selectedCalendar, setSelectedCalendar] = useState('');
-  const [events, setEvents] = useState([]);
+  const [iframeError, setIframeError] = useState(false);
 
   // Google OAuth for Calendar API
   const loginForCalendar = useGoogleLogin({
@@ -33,16 +33,7 @@ function CalendarPicker() {
       .catch(() => setCalendarList([]));
   }, [accessToken]);
 
-  // Fetch events for selected calendar
-  useEffect(() => {
-    if (!accessToken || !selectedCalendar) return;
-    fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(selectedCalendar)}/events?maxResults=10&orderBy=startTime&singleEvents=true&timeMin=${new Date().toISOString()}`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    )
-      .then(res => res.json())
-      .then(data => setEvents(data.items || []));
-  }, [accessToken, selectedCalendar]);
+  // No need to fetch events, we'll use the iframe embed
 
   return (
     <div className="calendar-picker-card bg-blue-50 border border-blue-200 rounded-2xl p-4 shadow-lg mt-6">
@@ -60,7 +51,10 @@ function CalendarPicker() {
             <select
               className="border border-blue-300 rounded px-2 py-1"
               value={selectedCalendar}
-              onChange={e => setSelectedCalendar(e.target.value)}
+              onChange={e => {
+                setSelectedCalendar(e.target.value);
+                setIframeError(false);
+              }}
             >
               {calendarList.map(cal => (
                 <option key={cal.id} value={cal.id}>
@@ -74,24 +68,26 @@ function CalendarPicker() {
                 setAccessToken(null);
                 setCalendarList([]);
                 setSelectedCalendar('');
+                setIframeError(false);
               }}
             >
               Disconnect
             </button>
           </div>
-          <ul className="flex flex-col gap-2 list-none p-0">
-            {events.length === 0 && <li className="text-gray-400 text-center">No upcoming events found.</li>}
-            {events.map(event => (
-              <li key={event.id} className="bg-blue-100 border border-blue-200 rounded-lg px-3 py-2 shadow-sm">
-                <div className="font-semibold text-blue-800">{event.summary || 'No Title'}</div>
-                <div className="text-xs text-blue-600">
-                  {event.start?.dateTime
-                    ? new Date(event.start.dateTime).toLocaleString()
-                    : event.start?.date || 'All day'}
-                </div>
-              </li>
-            ))}
-          </ul>
+          <div className="calendar-iframe-container" style={{ maxHeight: 400, overflowY: 'auto', width: '100%' }}>
+            {!iframeError && selectedCalendar ? (
+              <iframe
+                src={`https://calendar.google.com/calendar/embed?src=${encodeURIComponent(selectedCalendar)}&ctz=auto`}
+                style={{ border: 0, width: '100%', minHeight: 400 }}
+                frameBorder="0"
+                scrolling="no"
+                title="Google Calendar"
+                onError={() => setIframeError(true)}
+              ></iframe>
+            ) : selectedCalendar ? (
+              <div className="text-red-500 text-center p-4">Could not load this calendar. Make sure it is public or shared.</div>
+            ) : null}
+          </div>
         </>
       )}
     </div>
