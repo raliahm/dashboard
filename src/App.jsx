@@ -3,12 +3,17 @@ import { useState, useRef, useEffect } from 'react'
   import './App.css'
   import { useSession, signIn, signOut } from "next-auth/react";
 
-const { data: session } = useSession();
-if (!session) {
-  return <button onClick={() => signIn("google")}>Sign in with Google</button>;
-}
-
 function App() {
+  const { data: session } = useSession();
+
+  if (!session) {
+    return (
+      <div>
+        <button onClick={() => signIn("google")}>Sign in with Google</button>
+      </div>
+    );
+  }
+
   const [newItem, setNewItem] = useState("");
   const [items, setItems] = useState([]);
   const [editingId, setEditingId] = useState(null);
