@@ -126,13 +126,7 @@ app.delete('/api/classes/:id', (req, res) => {
   });
 });
 
-// Dummy in-memory data
-let classes = [
-  { id: 1, name: 'Math 101', attended: 5, total: 10 },
-];
-let homeworks = [
-  { id: 1, title: 'HW1', completed: false, dueDate: '2025-07-20' },
-];
+
 
 // Classes endpoints
 app.get('/api/classes', (req, res) => res.json(classes));
@@ -142,6 +136,7 @@ app.patch('/api/classes/:id', (req, res) => {
   res.json(classes.find(c => c.id === id));
 });
 
+/*// Todos endpoints
 // Homework endpoints
 app.get('/api/homeworks', (req, res) => res.json(homeworks));
 app.post('/api/homeworks', (req, res) => {
@@ -162,5 +157,6 @@ app.get('/api/canvas-due', (req, res) => {
     { title: 'Project', dueDate: '2025-07-25' },
   ]);
 });
+*/
 
 app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));

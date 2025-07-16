@@ -1,4 +1,5 @@
 import { createClient } from '@libsql/client';
+import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
   const db = createClient({
@@ -6,11 +7,28 @@ export default async function handler(req, res) {
     authToken: process.env.TURSO_AUTH_TOKEN,
   });
 
+  // Verify Google id_token from Authorization header
+  let userId = null;
+  const authHeader = req.headers['authorization'] || req.headers['Authorization'];
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const idToken = authHeader.replace('Bearer ', '');
+    try {
+      // Verify with Google
+      const googleRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`);
+      const googleData = await googleRes.json();
+      if (googleData && googleData.sub) {
+        userId = googleData.sub;
+      }
+    } catch (err) {
+      // ignore, will fail below if userId not set
+    }
+  }
+
   try {
-    // GET: fetch all todos for a user (userId required)
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    // GET: fetch all todos for the logged-in user
     if (req.method === 'GET') {
-      const userId = req.query.userId || req.body?.userId;
-      if (!userId) return res.status(401).json({ error: 'Unauthorized' });
       const result = await db.execute({
         sql: 'SELECT * FROM todos WHERE user_id = ? ORDER BY id',
         args: [userId],
@@ -18,10 +36,9 @@ export default async function handler(req, res) {
       return res.status(200).json(result.rows.map(row => ({ ...row, done: !!row.done })));
     }
 
-    // POST: add a new todo for a user
+    // POST: add a new todo for the logged-in user
     if (req.method === 'POST') {
-      const { text, done, userId } = req.body;
-      if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+      const { text, done } = req.body;
       const result = await db.execute({
         sql: 'INSERT INTO todos (text, done, user_id) VALUES (?, ?, ?) RETURNING *',
         args: [text, done ? 1 : 0, userId],
@@ -29,7 +46,7 @@ export default async function handler(req, res) {
       return res.status(201).json(result.rows[0]);
     }
 
-    // PATCH: update a todo for a user
+    // PATCH: update a todo for the logged-in user
     if (req.method === 'PATCH') {
       let id = req.query.id;
       if (!id && req.url) {
@@ -37,8 +54,8 @@ export default async function handler(req, res) {
         if (match) id = match[1];
       }
       if (!id) id = req.body.id;
-      const { text, done, userId } = req.body;
-      if (!id || !userId) return res.status(400).json({ error: 'Missing id or userId' });
+      const { text, done } = req.body;
+      if (!id) return res.status(400).json({ error: 'Missing id' });
       await db.execute({
         sql: 'UPDATE todos SET text = ?, done = ? WHERE id = ? AND user_id = ?',
         args: [text, done ? 1 : 0, id, userId],
@@ -50,7 +67,7 @@ export default async function handler(req, res) {
       return res.status(200).json(updated.rows[0]);
     }
 
-    // DELETE: delete a todo for a user
+    // DELETE: delete a todo for the logged-in user
     if (req.method === 'DELETE') {
       let id = req.query.id;
       if (!id && req.url) {
@@ -58,8 +75,7 @@ export default async function handler(req, res) {
         if (match) id = match[1];
       }
       if (!id) id = req.body.id;
-      const userId = req.body.userId;
-      if (!id || !userId) return res.status(400).json({ error: 'Missing id or userId' });
+      if (!id) return res.status(400).json({ error: 'Missing id' });
       await db.execute({
         sql: 'DELETE FROM todos WHERE id = ? AND user_id = ?',
         args: [id, userId],

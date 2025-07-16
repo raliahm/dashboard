@@ -14,6 +14,7 @@ function App() {
 
 function Dashboard() {
   const [user, setUser] = useState(null);
+  const [idToken, setIdToken] = useState(null); // Google id_token for API auth
   const [accessToken, setAccessToken] = useState(null);
   const [newItem, setNewItem] = useState("");
   const [items, setItems] = useState([]);
@@ -22,9 +23,11 @@ function Dashboard() {
   const [calendarEvents, setCalendarEvents] = useState([]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !idToken) return;
     setLoading(true);
-    fetch('/api/todos')
+    fetch('/api/todos', {
+      headers: { Authorization: `Bearer ${idToken}` },
+    })
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch todos');
         return res.json();
@@ -37,15 +40,18 @@ function Dashboard() {
         setLoading(false);
         alert('Error loading todos: ' + err.message);
       });
-  }, [user]);
+  }, [user, idToken]);
 
   const addItem = (e) => {
     e.preventDefault();
     if (newItem.trim() === "") return;
     fetch('/api/todos', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: newItem.trim(), done: false, userId: user.sub })
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({ text: newItem.trim(), done: false })
     })
       .then(res => {
         if (!res.ok) throw new Error('Failed to add todo');
@@ -63,8 +69,11 @@ function Dashboard() {
     if (!item) return;
     fetch(`/api/todos/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: item.text, done: !item.done, userId: user.sub })
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({ text: item.text, done: !item.done })
     })
       .then(res => {
         if (!res.ok) throw new Error('Failed to update todo');
@@ -77,8 +86,11 @@ function Dashboard() {
   const deleteItem = (id) => {
     fetch(`/api/todos/${id}`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: user.sub })
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({})
     })
       .then(res => {
         if (!res.ok) throw new Error('Failed to delete todo');
@@ -93,8 +105,11 @@ function Dashboard() {
     if (!item) return;
     fetch(`/api/todos/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: newText, done: item.done, userId: user.sub })
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({ text: newText, done: item.done })
     })
       .then(res => {
         if (!res.ok) throw new Error('Failed to update todo');
@@ -109,7 +124,7 @@ function Dashboard() {
   // Google login with calendar scope using GoogleLogin component
 
 
-  if (!user) {
+  if (!user || !idToken) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <h2 className="mb-4 text-lg font-semibold">Sign in to continue</h2>
@@ -119,6 +134,7 @@ function Dashboard() {
               try {
                 const decoded = jwtDecode(credentialResponse.credential);
                 setUser(decoded);
+                setIdToken(credentialResponse.credential); // Save id_token for API
               } catch (err) {
                 alert('Failed to decode id_token: ' + err.message);
               }
@@ -223,7 +239,7 @@ function Dashboard() {
       {/* Attended Classes Tracker Card */}
         <div className="dashboard-card attended-card">
           <h2 className="text-xl font-bold text-green-700 mb-2 text-center">📚 Attended Classes Tracker</h2>
-          <AttendedClassesTracker user={user} />
+          <AttendedClassesTracker user={user} idToken={idToken} />
         </div>
       </div>
     </div>
@@ -334,32 +350,38 @@ function PomodoroTimer() {
   );
 }
 
-function AttendedClassesTracker({ user }) {
+function AttendedClassesTracker({ user, idToken }) {
   const [classes, setClasses] = useState([]);
   const [newClass, setNewClass] = useState({ name: '', attended: 0, total: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !idToken) return;
     fetch('/api/classes', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: user.sub })
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({})
     })
       .then(res => res.json())
       .then(data => {
         setClasses(data);
         setLoading(false);
       });
-  }, [user]);
+  }, [user, idToken]);
 
   const increment = (id) => {
     const cls = classes.find(c => c.id === id);
     if (!cls || cls.attended >= cls.total) return;
     fetch(`/api/classes/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...cls, attended: cls.attended + 1, userId: user.sub })
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({ ...cls, attended: cls.attended + 1 })
     })
       .then(res => res.json())
       .then(updated => setClasses(classes.map(c => c.id === id ? updated : c)));
@@ -369,8 +391,11 @@ function AttendedClassesTracker({ user }) {
     if (!cls || cls.attended <= 0) return;
     fetch(`/api/classes/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...cls, attended: cls.attended - 1, userId: user.sub })
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({ ...cls, attended: cls.attended - 1 })
     })
       .then(res => res.json())
       .then(updated => setClasses(classes.map(c => c.id === id ? updated : c)));
@@ -380,8 +405,11 @@ function AttendedClassesTracker({ user }) {
     if (!newClass.name.trim() || newClass.total <= 0) return;
     fetch('/api/classes', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...newClass, attended: 0, userId: user.sub })
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({ ...newClass, attended: 0 })
     })
       .then(res => res.json())
       .then(added => {
@@ -392,8 +420,11 @@ function AttendedClassesTracker({ user }) {
   const deleteClass = (id) => {
     fetch(`/api/classes/${id}`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: user.sub })
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({})
     })
       .then(res => res.json())
       .then(() => setClasses(classes.filter(c => c.id !== id)));
