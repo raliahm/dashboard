@@ -1,4 +1,5 @@
 import { createClient } from '@libsql/client';
+import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
   const db = createClient({
@@ -6,14 +7,32 @@ export default async function handler(req, res) {
     authToken: process.env.TURSO_AUTH_TOKEN,
   });
 
+  // Verify Google id_token from Authorization header
+  let userId = null;
+  const authHeader = req.headers['authorization'] || req.headers['Authorization'];
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const idToken = authHeader.replace('Bearer ', '');
+    try {
+      // Verify with Google
+      const googleRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`);
+      const googleData = await googleRes.json();
+      if (googleData && googleData.sub) {
+        userId = googleData.sub;
+      }
+    } catch (err) {
+      // ignore, will fail below if userId not set
+    }
+  }
+
   try {
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
     // GET: not used by frontend, but could be added if needed
 
-    // POST: fetch all classes for user (if only userId provided), or add a new class
+    // POST: fetch all classes for user (if only name not provided), or add a new class
     if (req.method === 'POST') {
-      const { userId, name, attended, total } = req.body;
-      if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-      // If only userId, return all classes for user
+      const { name, attended, total } = req.body;
+      // If no name, return all classes for user
       if (!name) {
         const result = await db.execute({
           sql: 'SELECT * FROM classes WHERE user_id = ? ORDER BY id',
@@ -37,8 +56,8 @@ export default async function handler(req, res) {
         if (match) id = match[1];
       }
       if (!id) id = req.body.id;
-      const { name, attended, total, userId } = req.body;
-      if (!id || !userId) return res.status(400).json({ error: 'Missing id or userId' });
+      const { name, attended, total } = req.body;
+      if (!id) return res.status(400).json({ error: 'Missing id' });
       await db.execute({
         sql: 'UPDATE classes SET name = ?, attended = ?, total = ? WHERE id = ? AND user_id = ?',
         args: [name, attended, total, id, userId],
@@ -58,8 +77,7 @@ export default async function handler(req, res) {
         if (match) id = match[1];
       }
       if (!id) id = req.body.id;
-      const userId = req.body.userId;
-      if (!id || !userId) return res.status(400).json({ error: 'Missing id or userId' });
+      if (!id) return res.status(400).json({ error: 'Missing id' });
       await db.execute({
         sql: 'DELETE FROM classes WHERE id = ? AND user_id = ?',
         args: [id, userId],
