@@ -24,10 +24,10 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PATCH') {
-      const { id, text, done } = req.body;
+      const { id, text, done , userId} = req.body;
       await db.execute({
-        sql: 'UPDATE todos SET text = ?, done = ? WHERE id = ?',
-        args: [text, done ? 1 : 0, id],
+        sql: 'UPDATE todos SET text = ?, done = ? WHERE id = ? AND user_id = ?',
+        args: [text, done ? 1 : 0, id, userId],
       });
       const updated = await db.execute({
         sql: 'SELECT * FROM todos WHERE id = ?',
@@ -37,10 +37,10 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'DELETE') {
-      const { id } = req.body;
+      const { id, userId } = req.body;
       await db.execute({
-        sql: 'DELETE FROM todos WHERE id = ?',
-        args: [id],
+        sql: 'DELETE FROM todos WHERE id = ? AND user_id = ?',
+        args: [id, userId],
       });
       return res.status(200).json({ success: true });
     }
