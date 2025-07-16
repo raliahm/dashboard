@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import './App.css';
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { GoogleOAuthProvider, GoogleLogin, useGoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 
 function App() {
@@ -13,6 +13,17 @@ function App() {
 }
 
 function Dashboard() {
+  // Google Calendar OAuth access
+  const handleCalendarLogin = useGoogleLogin({
+    scope: 'https://www.googleapis.com/auth/calendar.readonly',
+    onSuccess: tokenResponse => {
+      setAccessToken(tokenResponse.access_token);
+    },
+    onError: () => {
+      alert('Failed to get Google Calendar access.');
+    },
+    flow: 'implicit',
+  });
   // Try to restore user and idToken from localStorage
   const [user, setUser] = useState(() => {
     const stored = localStorage.getItem('user');
@@ -279,7 +290,15 @@ function Dashboard() {
             {accessToken ? (
               <UserCalendar accessToken={accessToken} events={calendarEvents} setEvents={setCalendarEvents} calendarId={calendarId} />
             ) : (
-              <div className="text-gray-500 text-center">Sign in to view your events.</div>
+              <div className="flex flex-col items-center gap-2">
+                <div className="text-gray-500 text-center">Connect your Google Calendar to view events.</div>
+                <button
+                  className="bg-blue-400 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition-colors"
+                  onClick={() => handleCalendarLogin()}
+                >
+                  Connect Google Calendar
+                </button>
+              </div>
             )}
           </div>
         </div>
