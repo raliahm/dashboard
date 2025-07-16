@@ -597,6 +597,7 @@ function AssignmentsTrackers({ user, idToken }) {
       });
   }, [user, idToken]);
 
+  const doneCountAssignments = assignments.filter(a => a.completed).length;
   const addAssignment = (e) => {
     e.preventDefault();
     if (!newAssignment.name.trim() || !newAssignment.due_date) return;
@@ -633,9 +634,15 @@ function AssignmentsTrackers({ user, idToken }) {
       .then(() => setAssignments(assignments.filter(a => a.id !== id)))
       .catch(err => alert('Error deleting assignment: ' + err.message));
   };
+
+  
   
   return (
     <div className="w-full flex flex-col items-center gap-4">
+      <article className="bg-yellow-100 border-2 border-yellow-200 rounded-2xl px-6 py-3 shadow-lg text-yellow-700 text-base font-semibold flex flex-col items-center min-w-[160px]">
+            <span className="text-xs mb-1">Tasks Completed: </span>
+            <span className="text-2xl font-bold">{doneCountAssignments}</span>
+      </article>
       <form onSubmit={addAssignment} className="flex gap-2 mb-2
 ">
         <input
