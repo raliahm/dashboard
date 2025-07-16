@@ -36,8 +36,8 @@ function CalendarPicker() {
   // No need to fetch events, we'll use the iframe embed
 
   return (
-    <div className="calendar-picker-card bg-blue-50 border border-blue-200 rounded-2xl p-4 shadow-lg mt-6">
-      <h2 className="text-lg font-bold text-blue-700 mb-2 text-center">Google Calendar Picker (Demo)</h2>
+    <div className="dashboard-card calendar-card">
+      <h2 className="text-xl font-bold text-blue-700 mb-2 text-center">Google Calendar Picker</h2>
       {!accessToken ? (
         <button
           className="bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition"
