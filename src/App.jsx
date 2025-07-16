@@ -103,6 +103,8 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={clientId}>
       <Dashboard />
+      <AssignmentsTracker />
+      
     </GoogleOAuthProvider>
   );
 }
@@ -601,4 +603,118 @@ function AttendedClassesTracker({ user, idToken }) {
   );
 }
 
+function AssignmentsTracker({ user, idToken }) {
+  const [assignments, setAssignments] = useState([]);
+  const [newAssignment, setNewAssignment] = useState({ name: '', due_date: '', completed: false });
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    if (!user || !idToken) return;
+    setLoading(true);
+    fetch('/api/assignments', {
+      headers: { Authorization: `Bearer ${idToken}` },
+    })
+      .then(res => res.json())
+      .then(data => {
+        setAssignments(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        setLoading(false);
+        alert('Error loading assignments: ' + err.message);
+      });
+  }, [user, idToken]);
+  
+  const addAssignment = (e) => {
+    e.preventDefault();
+    if (!newAssignment.name.trim() || !newAssignment.due_date) return;
+    fetch('/api/assignments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({ ...newAssignment, completed: false })
+    })
+      .then(res => res.json())
+      .then(added => {
+        setAssignments([...assignments, added]);
+        setNewAssignment({ name: '', due_date: '', completed: false });
+      })
+      .catch(err => alert('Error adding assignment: ' + err.message));
+  };
+
+  const toggleCompleted = (id) => {
+    const assignment = assignments.find(a => a.id === id);
+    if (!assignment) return;
+    fetch(`/api/assignments/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({ ...assignment, completed: !assignment.completed })
+    })
+      .then(res => res.json())
+      .then(updated => setAssignments(assignments.map(a => a.id === id ? updated : a)))
+      .catch(err => alert('Error updating assignment: ' + err.message));
+  };
+
+  const deleteAssignment = (id) => {
+    fetch(`/api/assignments/${id
+}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+    })
+      .then(res => res.json())
+      .then(() => setAssignments(assignments.filter(a => a.id !== id)))
+      .catch(err => alert('Error deleting assignment: ' + err.message));
+  };
+
+  if (loading) return <div>Loading...</div>;
+  
+  return (
+    <div className="w-full flex flex-col items-center gap-4">
+      <form onSubmit={addAssignment} className="flex gap-2 mb-2
+">
+        <input
+          className="border border-blue-300 rounded px-2 py-1"
+          placeholder="Assignment name"
+          value={newAssignment.name}
+          onChange={e => setNewAssignment({ ...newAssignment, name: e.target.value })}
+        />
+        <input
+          className="border border-blue-300 rounded px-2 py-1"
+          type="date"
+          value={newAssignment.due_date}
+          onChange={e => setNewAssignment({ ...newAssignment, due_date: e.target.value })}
+        />
+        <button className="bg-blue-400 text-white px-3 py-1 rounded hover:bg-blue-500">Add</button>
+      </form>
+      <div className="w-full flex flex-wrap gap-3 justify-center">
+        {assignments.map(assignment => (
+          <div key={assignment.id} className="assignment-card">
+            <span className={`font-semibold mb-2 text-center ${assignment.completed
+              ? 'text-gray-400 line-through'
+              : 'text-blue-800'}`}>
+              {assignment.name}
+            </span>
+            <div className="flex items-center gap-2 mb-2">
+              <input
+                type="checkbox"
+                checked={assignment.completed}
+                onChange={() => toggleCompleted(assignment.id)}
+                className="accent-blue-500 scale-90"
+              />
+              <span className="text-xs text-gray-600">{new Date(assignment.due_date).toLocaleDateString()}</span>
+              <button onClick={() => deleteAssignment(assignment.id)} className="ml-2 text-red-400 hover:text-red-700">🗑️</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 export default App;
