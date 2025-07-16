@@ -1,87 +1,3 @@
-// AssignmentTracker: tracks homeworks, tests, project deadlines
-function AssignmentTracker() {
-  const [assignments, setAssignments] = useState([]);
-  const [newAssignment, setNewAssignment] = useState({ name: '', type: 'Homework', due_date: '' });
-  const [editingId, setEditingId] = useState(null);
-  const [idToken, setIdToken] = useState(() => localStorage.getItem('idToken'));
-
-  // Fetch assignments from backend
-  useEffect(() => {
-    if (!idToken) return;
-    fetch('/api/tracker', {
-      method: 'GET',
-      headers: { 'Authorization': `Bearer ${idToken}` }
-    })
-      .then(res => res.json())
-      .then(data => setAssignments(data || []));
-  }, [idToken]);
-
-  const addAssignment = (e) => {
-    e.preventDefault();
-    if (!newAssignment.name.trim() || !newAssignment.due_date) return;
-    fetch('/api/tracker', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${idToken}`
-      },
-      body: JSON.stringify({ name: newAssignment.name, due_date: newAssignment.due_date })
-    })
-      .then(res => res.json())
-      .then(added => {
-        setAssignments([...assignments, added]);
-        setNewAssignment({ name: '', type: 'Homework', due_date: '' });
-      });
-  };
-  const deleteAssignment = (id) => {
-    fetch(`/api/tracker/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${idToken}` },
-      body: JSON.stringify({})
-    })
-      .then(res => res.json())
-      .then(() => setAssignments(assignments.filter(a => a.id !== id)));
-  };
-  // No edit or done for now, just display and delete
-
-  return (
-    <div className="dashboard-card assignment-card">
-      <h2 className="text-xl font-bold text-yellow-700 mb-2 text-center">📅 Assignment Tracker</h2>
-      <form onSubmit={addAssignment} className="flex flex-col sm:flex-row gap-2 mb-2 items-center">
-        <input
-          className="flex-grow p-2 border border-yellow-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-300 bg-yellow-50 placeholder-yellow-500"
-          placeholder="Assignment name..."
-          value={newAssignment.name}
-          onChange={e => setNewAssignment({ ...newAssignment, name: e.target.value })}
-        />
-        <input
-          type="date"
-          className="border border-yellow-300 rounded px-2 py-1"
-          value={newAssignment.due_date}
-          onChange={e => setNewAssignment({ ...newAssignment, due_date: e.target.value })}
-        />
-        <button className="bg-yellow-400 text-white px-4 py-2 rounded-xl hover:bg-yellow-500">Add</button>
-      </form>
-      <ul className="flex flex-col gap-2 list-none">
-        {assignments.map(a => (
-          <li key={a.id} className="assignment-card w-full grid grid-cols-[1fr_auto_auto] items-center gap-2 p-1 rounded-lg border border-yellow-200 shadow-sm min-h-[28px] max-h-[36px] text-sm">
-            <span className="w-full text-xs text-yellow-800 font-semibold">{a.name}</span>
-            {/* Only show formatted due date */}
-            <span className="text-xs text-yellow-700 font-semibold">{a.formatted_due}</span>
-            <button
-              onClick={() => deleteAssignment(a.id)}
-              className="text-yellow-400 hover:text-yellow-600 px-1 text-base"
-              title="Delete"
-              style={{ lineHeight: 1 }}
-            >
-              ❌
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
 // CalendarPicker: lets user authenticate, lists all calendars, and lets user pick one
 import { useGoogleLogin } from '@react-oauth/google';
 
@@ -451,8 +367,6 @@ function Dashboard() {
             <PomodoroTimer />
           </article>
         </div>
-        {/* Assignment Tracker Card */}
-        <AssignmentTracker />
         {/* Google Calendar Card */}
         <CalendarPicker />
       {/* Attended Classes Tracker Card */}
