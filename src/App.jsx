@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import './App.css';
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { GoogleOAuthProvider, GoogleLogin, useGoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 
 function App() {
@@ -10,16 +10,27 @@ function App() {
       <Dashboard />
     </GoogleOAuthProvider>
   );
-}
+// ...existing code...
 
-function Dashboard() {
   // Try to restore user and idToken from localStorage
   const [user, setUser] = useState(() => {
     const stored = localStorage.getItem('user');
     return stored ? JSON.parse(stored) : null;
   });
   const [idToken, setIdToken] = useState(() => localStorage.getItem('idToken'));
-  const [accessToken, setAccessToken] = useState(null);
+  const [accessToken, setAccessToken] = useState(() => localStorage.getItem('accessToken'));
+  // Google OAuth login for calendar access
+  const loginForCalendar = useGoogleLogin({
+    scope: 'https://www.googleapis.com/auth/calendar.readonly',
+    flow: 'implicit',
+    onSuccess: (tokenResponse) => {
+      if (tokenResponse && tokenResponse.access_token) {
+        setAccessToken(tokenResponse.access_token);
+        localStorage.setItem('accessToken', tokenResponse.access_token);
+      }
+    },
+    onError: () => alert('Failed to get Google Calendar access token'),
+  });
   const [newItem, setNewItem] = useState("");
   const [items, setItems] = useState([]);
   const [editingId, setEditingId] = useState(null);
@@ -41,6 +52,13 @@ function Dashboard() {
       localStorage.removeItem('idToken');
     }
   }, [idToken]);
+  useEffect(() => {
+    if (accessToken) {
+      localStorage.setItem('accessToken', accessToken);
+    } else {
+      localStorage.removeItem('accessToken');
+    }
+  }, [accessToken]);
 
   useEffect(() => {
     if (!user || !idToken) return;
@@ -255,7 +273,12 @@ function Dashboard() {
             {accessToken ? (
               <UserCalendar accessToken={accessToken} events={calendarEvents} setEvents={setCalendarEvents} />
             ) : (
-              <div className="text-gray-500 text-center">Sign in to view your events.</div>
+              <button
+                className="bg-blue-400 text-white px-4 py-2 rounded-xl hover:bg-blue-600 mt-2"
+                onClick={() => loginForCalendar()}
+              >
+                Connect Google Calendar
+              </button>
             )}
           </div>
         </div>
