@@ -15,6 +15,7 @@ function AssignmentTracker() {
       .then(res => res.json())
       .then(data => setAssignments(data || []));
   }, [idToken]);
+
   const addAssignment = (e) => {
     e.preventDefault();
     if (!newAssignment.name.trim() || !newAssignment.due_date) return;
@@ -31,34 +32,6 @@ function AssignmentTracker() {
         setAssignments([...assignments, added]);
         setNewAssignment({ name: '', type: 'Homework', due_date: '' });
       });
-  };
-
-  const updateAssignment = (id, updated) => {
-    fetch(`/api/tracker/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${idToken}`
-      },
-      body: JSON.stringify(updated)
-    })
-      .then(res => res.json())
-      .then(updatedObj => {
-        setAssignments(assignments.map(a => a.id === id ? updatedObj : a));
-      });
-  };
-
-  const deleteAssignment = (id) => {
-    fetch(`/api/tracker/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${idToken}` },
-      body: JSON.stringify({})
-    })
-      .then(res => res.json())
-      .then(() => setAssignments(assignments.filter(a => a.id !== id)));
-  };
-
-  // Editable assignment name and due date
   };
   const deleteAssignment = (id) => {
     fetch(`/api/tracker/${id}`, {
@@ -108,7 +81,7 @@ function AssignmentTracker() {
       </ul>
     </div>
   );
-// ...existing code...
+}
 // CalendarPicker: lets user authenticate, lists all calendars, and lets user pick one
 import { useGoogleLogin } from '@react-oauth/google';
 
