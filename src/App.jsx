@@ -13,14 +13,34 @@ function App() {
 }
 
 function Dashboard() {
-  const [user, setUser] = useState(null);
-  const [idToken, setIdToken] = useState(null); // Google id_token for API auth
+  // Try to restore user and idToken from localStorage
+  const [user, setUser] = useState(() => {
+    const stored = localStorage.getItem('user');
+    return stored ? JSON.parse(stored) : null;
+  });
+  const [idToken, setIdToken] = useState(() => localStorage.getItem('idToken'));
   const [accessToken, setAccessToken] = useState(null);
   const [newItem, setNewItem] = useState("");
   const [items, setItems] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [calendarEvents, setCalendarEvents] = useState([]);
+
+  // Keep user and idToken in sync with localStorage
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('user');
+    }
+  }, [user]);
+  useEffect(() => {
+    if (idToken) {
+      localStorage.setItem('idToken', idToken);
+    } else {
+      localStorage.removeItem('idToken');
+    }
+  }, [idToken]);
 
   useEffect(() => {
     if (!user || !idToken) return;
@@ -135,6 +155,9 @@ function Dashboard() {
                 const decoded = jwtDecode(credentialResponse.credential);
                 setUser(decoded);
                 setIdToken(credentialResponse.credential); // Save id_token for API
+                // Save to localStorage immediately for smoother reloads
+                localStorage.setItem('user', JSON.stringify(decoded));
+                localStorage.setItem('idToken', credentialResponse.credential);
               } catch (err) {
                 alert('Failed to decode id_token: ' + err.message);
               }
