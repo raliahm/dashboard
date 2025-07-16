@@ -49,7 +49,7 @@ function CalendarPicker() {
         <>
           <div className="flex items-center gap-2 mb-2">
             <select
-              className="border border-blue-300 rounded px-2 py-1"
+              className="border border-blue-300 rounded px-2 py-1 calendar-select"
               value={selectedCalendar}
               onChange={e => {
                 setSelectedCalendar(e.target.value);
