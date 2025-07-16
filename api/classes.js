@@ -1,7 +1,14 @@
 import { createClient } from '@libsql/client';
 import fetch from 'node-fetch';
 
+// Support dynamic API routes: /api/classes/[id]
 export default async function handler(req, res) {
+  // Extract id from dynamic route if present
+  let dynamicId = null;
+  if (req.url) {
+    const match = req.url.match(/\/api\/classes\/?(\d+)?/);
+    if (match && match[1]) dynamicId = match[1];
+  }
 
   const db = createClient({
     url: process.env.TURSO_DATABASE_URL,
@@ -51,11 +58,7 @@ export default async function handler(req, res) {
 
     // PATCH: update a class (increment/decrement attended)
     if (req.method === 'PATCH') {
-      let id = req.query.id;
-      if (!id && req.url) {
-        const match = req.url.match(/\/api\/classes\/(\d+)/);
-        if (match) id = match[1];
-      }
+      let id = req.query.id || dynamicId;
       if (!id) id = req.body.id;
       const { name, attended, total } = req.body;
       if (!id) return res.status(400).json({ error: 'Missing id' });
@@ -72,11 +75,7 @@ export default async function handler(req, res) {
 
     // DELETE: delete a class
     if (req.method === 'DELETE') {
-      let id = req.query.id;
-      if (!id && req.url) {
-        const match = req.url.match(/\/api\/classes\/(\d+)/);
-        if (match) id = match[1];
-      }
+      let id = req.query.id || dynamicId;
       if (!id) id = req.body.id;
       if (!id) return res.status(400).json({ error: 'Missing id' });
       await db.execute({
