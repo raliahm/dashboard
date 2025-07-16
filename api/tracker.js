@@ -9,36 +9,66 @@ const db = createClient({
 import { verifyGoogleToken } from './auth';
 
 export default async function handler(req, res) {
-  if (req.method === 'POST') {
-    // Get all assignments for user
-    const auth = req.headers.authorization;
-    if (!auth) return res.status(401).json({ error: 'Missing token' });
-    const user = await verifyGoogleToken(auth.split(' ')[1]);
-    if (!user) return res.status(401).json({ error: 'Invalid token' });
-    const user_id = user.sub;
-    const rows = await db.execute(
-      'SELECT id, name, due_date, formatted_due FROM assignments_tracker WHERE user_id = ? ORDER BY due_date ASC',
-      [user_id]
-    );
-    return res.json(rows.rows);
-  } else if (req.method === 'PUT') {
-    // Add new assignment
-    const auth = req.headers.authorization;
-    if (!auth) return res.status(401).json({ error: 'Missing token' });
-    const user = await verifyGoogleToken(auth.split(' ')[1]);
-    if (!user) return res.status(401).json({ error: 'Invalid token' });
-    const user_id = user.sub;
-    const { name, due_date } = req.body;
-    if (!name || !due_date) return res.status(400).json({ error: 'Missing fields' });
-    // Format due date as MM-DD-YYYY
-    const d = new Date(due_date);
-    const formatted_due = `${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}-${d.getFullYear()}`;
-    const result = await db.execute(
-      'INSERT INTO assignments_tracker (name, due_date, formatted_due, user_id) VALUES (?, ?, ?, ?)',
-      [name, due_date, formatted_due, user_id]
-    );
-    return res.json({ id: result.lastInsertRowid, name, due_date, formatted_due, user_id });
-  } else {
-    res.status(405).json({ error: 'Method not allowed' });
+  console.log('--- Assignment Tracker handler called ---');
+  try {
+    if (req.method === 'POST') {
+      console.log('POST method');
+      const auth = req.headers.authorization;
+      if (!auth) {
+        console.log('No auth header');
+        return res.status(401).json({ error: 'Missing token' });
+      }
+      const user = await verifyGoogleToken(auth.split(' ')[1]);
+      if (!user) {
+        console.log('Invalid token');
+        return res.status(401).json({ error: 'Invalid token' });
+      }
+      const user_id = user.sub;
+      console.log('User ID:', user_id);
+      const rows = await db.execute(
+        'SELECT id, name, due_date, formatted_due FROM assignments_tracker WHERE user_id = ? ORDER BY due_date ASC',
+        [user_id]
+      );
+      console.log('Fetched assignments:', rows.rows);
+      return res.json(rows.rows);
+    } else if (req.method === 'PUT') {
+      console.log('PUT method');
+      const auth = req.headers.authorization;
+      if (!auth) {
+        console.log('No auth header');
+        return res.status(401).json({ error: 'Missing token' });
+      }
+      const user = await verifyGoogleToken(auth.split(' ')[1]);
+      if (!user) {
+        console.log('Invalid token');
+        return res.status(401).json({ error: 'Invalid token' });
+      }
+      const user_id = user.sub;
+      let body = req.body;
+      if (typeof body === 'string') {
+        try { body = JSON.parse(body); } catch (e) { console.log('Body parse error', e); body = {}; }
+      }
+      const { name, due_date } = body;
+      console.log('PUT body:', body);
+      if (!name || !due_date) {
+        console.log('Missing fields');
+        return res.status(400).json({ error: 'Missing fields' });
+      }
+      const d = new Date(due_date);
+      const formatted_due = `${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}-${d.getFullYear()}`;
+      console.log('Inserting assignment:', { name, due_date, formatted_due, user_id });
+      const result = await db.execute(
+        'INSERT INTO assignments_tracker (name, due_date, formatted_due, user_id) VALUES (?, ?, ?, ?)',
+        [name, due_date, formatted_due, user_id]
+      );
+      console.log('Insert result:', result);
+      return res.json({ id: result.lastInsertRowid, name, due_date, formatted_due, user_id });
+    } else {
+      console.log('Method not allowed:', req.method);
+      res.status(405).json({ error: 'Method not allowed' });
+    }
+  } catch (err) {
+    console.log('Assignment Tracker error:', err);
+    res.status(500).json({ error: 'Internal server error', details: err.message });
   }
 }
