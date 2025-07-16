@@ -283,23 +283,17 @@ function Dashboard() {
             <PomodoroTimer />
           </article>
         </div>
-        {/* Google Calendar Card */}
+        {/* Google Calendar Card (iframe embed) */}
         <div className="dashboard-card calendar-card">
-          <h2 className="text-xl font-bold text-blue-700 mb-2 text-center">Your Google Calendar Events</h2>
-          <div className="calendar-events-container" style={{ maxHeight: 300, overflowY: 'auto', width: '100%' }}>
-            {accessToken ? (
-              <UserCalendar accessToken={accessToken} events={calendarEvents} setEvents={setCalendarEvents} calendarId={calendarId} />
-            ) : (
-              <div className="flex flex-col items-center gap-2">
-                <div className="text-gray-500 text-center">Connect your Google Calendar to view events.</div>
-                <button
-                  className="bg-blue-400 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition-colors"
-                  onClick={() => handleCalendarLogin()}
-                >
-                  Connect Google Calendar
-                </button>
-              </div>
-            )}
+          <h2 className="text-xl font-bold text-blue-700 mb-2 text-center">Your Google Calendar</h2>
+          <div className="calendar-events-container" style={{ maxHeight: 400, overflowY: 'auto', width: '100%' }}>
+            <iframe
+              src={`https://calendar.google.com/calendar/embed?src=${encodeURIComponent(calendarId)}&ctz=auto`}
+              style={{ border: 0, width: '100%', minHeight: 400 }}
+              frameBorder="0"
+              scrolling="no"
+              title="Google Calendar"
+            ></iframe>
           </div>
         </div>
       {/* Attended Classes Tracker Card */}
@@ -312,34 +306,7 @@ function Dashboard() {
   );
 }
 
-// Fetch and display user's Google Calendar events
-function UserCalendar({ accessToken, events, setEvents, calendarId }) {
-  useEffect(() => {
-    if (!accessToken || !calendarId) return;
-    fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?maxResults=10&orderBy=startTime&singleEvents=true&timeMin=` + new Date().toISOString(), {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
-      .then(res => res.json())
-      .then(data => {
-        setEvents(data.items || []);
-      });
-  }, [accessToken, setEvents, calendarId]);
-
-  if (!events.length) return <div className="text-gray-400 text-center">No upcoming events found.</div>;
-
-  return (
-    <ul className="flex flex-col gap-2 list-none p-0">
-      {events.map(event => (
-        <li key={event.id} className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 shadow-sm">
-          <div className="font-semibold text-blue-800">{event.summary || 'No Title'}</div>
-          <div className="text-xs text-blue-600">
-            {event.start?.dateTime ? new Date(event.start.dateTime).toLocaleString() : event.start?.date || 'All day'}
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
-}
+// (UserCalendar component removed, now using iframe embed)
     
 
 function PomodoroTimer() {
