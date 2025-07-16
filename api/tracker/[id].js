@@ -36,19 +36,23 @@ export default async function handler(req, res) {
     if (!id) return res.status(400).json({ error: 'Missing id' });
 
     if (req.method === 'PATCH') {
-      const { name, due_date } = req.body;
-      if (!name || !due_date) return res.status(400).json({ error: 'Missing fields' });
+      const { name, due_date, completed } = req.body;
+      if (!name || !due_date || typeof completed === 'undefined') {
+        return res.status(400).json({ error: 'Missing fields' });
+      }
       const d = new Date(due_date);
       const formatted_due = `${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}-${d.getFullYear()}`;
       await db.execute({
-        sql: 'UPDATE assignments_tracker SET name = ?, due_date = ?, formatted_due = ? WHERE id = ? AND user_id = ?',
-        args: [name, due_date, formatted_due, id, userId],
+        sql: 'UPDATE assignments_tracker SET name = ?, due_date = ?, formatted_due = ?, completed = ? WHERE id = ? AND user_id = ?',
+        args: [name, due_date, formatted_due, completed ? 1 : 0, id, userId],
       });
       const updated = await db.execute({
         sql: 'SELECT * FROM assignments_tracker WHERE id = ? AND user_id = ?',
         args: [id, userId],
       });
-      return res.status(200).json(updated.rows[0]);
+      const row = updated.rows[0];
+      row.completed = !!row.completed;
+      return res.status(200).json(row);
     }
 
     if (req.method === 'DELETE') {

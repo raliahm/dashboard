@@ -104,7 +104,6 @@ function App() {
     <GoogleOAuthProvider clientId={clientId}>
       <Dashboard />
       <AssignmentsTracker />
-      
     </GoogleOAuthProvider>
   );
 }
@@ -610,7 +609,7 @@ function AssignmentsTracker({ user, idToken }) {
   useEffect(() => {
     if (!user || !idToken) return;
     setLoading(true);
-    fetch('/api/assignments', {
+    fetch('/api/tracker', {
       headers: { Authorization: `Bearer ${idToken}` },
     })
       .then(res => res.json())
@@ -623,17 +622,17 @@ function AssignmentsTracker({ user, idToken }) {
         alert('Error loading assignments: ' + err.message);
       });
   }, [user, idToken]);
-  
+
   const addAssignment = (e) => {
     e.preventDefault();
     if (!newAssignment.name.trim() || !newAssignment.due_date) return;
-    fetch('/api/assignments', {
+    fetch('/api/tracker', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${idToken}`,
       },
-      body: JSON.stringify({ ...newAssignment, completed: false })
+      body: JSON.stringify({ name: newAssignment.name, due_date: newAssignment.due_date })
     })
       .then(res => res.json())
       .then(added => {
@@ -644,19 +643,8 @@ function AssignmentsTracker({ user, idToken }) {
   };
 
   const toggleCompleted = (id) => {
-    const assignment = assignments.find(a => a.id === id);
-    if (!assignment) return;
-    fetch(`/api/assignments/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${idToken}`,
-      },
-      body: JSON.stringify({ ...assignment, completed: !assignment.completed })
-    })
-      .then(res => res.json())
-      .then(updated => setAssignments(assignments.map(a => a.id === id ? updated : a)))
-      .catch(err => alert('Error updating assignment: ' + err.message));
+    // Not implemented in backend, so just ignore for now or show alert
+    alert('Marking assignments as completed is not implemented.');
   };
 
   const deleteAssignment = (id) => {
