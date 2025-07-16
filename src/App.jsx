@@ -18,12 +18,33 @@ function Dashboard() {
     scope: 'https://www.googleapis.com/auth/calendar.readonly',
     onSuccess: tokenResponse => {
       setAccessToken(tokenResponse.access_token);
+      fetchCalendars(tokenResponse.access_token);
     },
     onError: () => {
       alert('Failed to get Google Calendar access.');
     },
     flow: 'implicit',
   });
+
+  // Fetch all calendars using Google Calendar API
+  const fetchCalendars = async (token) => {
+    try {
+      const res = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to fetch calendars');
+      const data = await res.json();
+      if (data.items) {
+        setCalendarOptions(data.items.map(cal => ({ value: cal.id, label: cal.summary })));
+        setCalendarId(data.items[0]?.id || 'primary');
+        setCustomCalendarId('');
+      } else {
+        alert('No calendars found.');
+      }
+    } catch (err) {
+      alert('Error fetching calendars: ' + err.message);
+    }
+  };
   // Try to restore user and idToken from localStorage
   const [user, setUser] = useState(() => {
     const stored = localStorage.getItem('user');
@@ -39,13 +60,14 @@ function Dashboard() {
   const [calendarId, setCalendarId] = useState('primary');
   const [customCalendarId, setCustomCalendarId] = useState('');
   // User calendar options: always user's, plus any added by user
-  const [calendarOptions, setCalendarOptions] = useState([{ value: calendarId }]);
+  const [calendarOptions, setCalendarOptions] = useState([{ value: calendarId, label: calendarId }]);
   const [calendarIframeError, setCalendarIframeError] = useState(false);
-  // Fetch user's calendarId from backend
+  // Fetch user's calendarId from backend (for default only, if no accessToken)
   useEffect(() => {
+    if (accessToken) return; // Don't fetch if we have accessToken (will fetch all calendars)
     if (!idToken) {
       setCalendarId('primary');
-      setCalendarOptions([{ value: 'primary' }]);
+      setCalendarOptions([{ value: 'primary', label: 'primary' }]);
       return;
     }
     fetch('/api/calendar', {
@@ -55,19 +77,19 @@ function Dashboard() {
       .then(data => {
         if (data.calendarId) {
           setCalendarId(data.calendarId);
-          setCalendarOptions([{ value: data.calendarId }]);
+          setCalendarOptions([{ value: data.calendarId, label: data.calendarId }]);
         } else if (data.error) {
           setCalendarId('primary');
-          setCalendarOptions([{ value: 'primary' }]);
+          setCalendarOptions([{ value: 'primary', label: 'primary' }]);
           alert('Could not fetch your calendar: ' + data.error);
         }
       })
       .catch(err => {
         setCalendarId('primary');
-        setCalendarOptions([{ value: 'primary' }]);
+        setCalendarOptions([{ value: 'primary', label: 'primary' }]);
         alert('Could not fetch your calendar: ' + err.message);
       });
-  }, [idToken]);
+  }, [idToken, accessToken]);
 
   // Keep user and idToken in sync with localStorage
   useEffect(() => {
@@ -299,7 +321,7 @@ function Dashboard() {
             onSubmit={e => {
               e.preventDefault();
               if (customCalendarId && !calendarOptions.some(opt => opt.value === customCalendarId)) {
-                setCalendarOptions([...calendarOptions, { value: customCalendarId }]);
+                setCalendarOptions([...calendarOptions, { value: customCalendarId, label: customCalendarId }]);
               }
             }}
             autoComplete="off"
@@ -321,6 +343,17 @@ function Dashboard() {
                 className="px-3 py-1 bg-blue-400 text-white rounded hover:bg-blue-600 text-xs"
                 type="submit"
               >Add</button>
+              <button
+                type="button"
+                className="px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-400 text-xs ml-2"
+                onClick={() => {
+                  if (!accessToken) {
+                    handleCalendarLogin();
+                  } else {
+                    fetchCalendars(accessToken);
+                  }
+                }}
+              >List My Calendars</button>
             </div>
             <select
               id="calendar-select"
@@ -332,7 +365,7 @@ function Dashboard() {
               }}
             >
               {calendarOptions.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.value}</option>
+                <option key={opt.value} value={opt.value}>{opt.label || opt.value}</option>
               ))}
             </select>
           </form>
