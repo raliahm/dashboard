@@ -618,8 +618,19 @@ function AssignmentsTrackers({ user, idToken }) {
   };
 
   const toggleCompleted = (id) => {
-    // Not implemented in backend, so just ignore for now or show alert
-    alert('Marking assignments as completed is not implemented.');
+    const assignment = assignments.find(a => a.id === id);
+    if (!assignment) return;
+    fetch(`/api/trackers/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({ ...assignment, completed: !assignment.completed })
+    })
+      .then(res => res.json())
+      .then(updated => setAssignments(assignments.map(a => a.id === id ? updated : a)))
+      .catch(err => alert('Error updating assignment: ' + err.message));
   };
 
   const deleteAssignment = (id) => {
