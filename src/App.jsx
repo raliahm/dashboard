@@ -25,6 +25,18 @@ function Dashboard() {
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [calendarEvents, setCalendarEvents] = useState([]);
+  const [calendarId, setCalendarId] = useState('primary');
+  // Fetch user's calendarId from backend
+  useEffect(() => {
+    if (!idToken) return;
+    fetch('/api/calendar', {
+      headers: { Authorization: `Bearer ${idToken}` },
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.calendarId) setCalendarId(data.calendarId);
+      });
+  }, [idToken]);
 
   // Keep user and idToken in sync with localStorage
   useEffect(() => {
@@ -253,7 +265,7 @@ function Dashboard() {
           <h2 className="text-xl font-bold text-blue-700 mb-2 text-center">Your Google Calendar Events</h2>
           <div className="calendar-events-container" style={{ maxHeight: 300, overflowY: 'auto', width: '100%' }}>
             {accessToken ? (
-              <UserCalendar accessToken={accessToken} events={calendarEvents} setEvents={setCalendarEvents} />
+              <UserCalendar accessToken={accessToken} events={calendarEvents} setEvents={setCalendarEvents} calendarId={calendarId} />
             ) : (
               <div className="text-gray-500 text-center">Sign in to view your events.</div>
             )}
@@ -270,17 +282,17 @@ function Dashboard() {
 }
 
 // Fetch and display user's Google Calendar events
-function UserCalendar({ accessToken, events, setEvents }) {
+function UserCalendar({ accessToken, events, setEvents, calendarId }) {
   useEffect(() => {
-    if (!accessToken) return;
-    fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?maxResults=10&orderBy=startTime&singleEvents=true&timeMin=' + new Date().toISOString(), {
+    if (!accessToken || !calendarId) return;
+    fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?maxResults=10&orderBy=startTime&singleEvents=true&timeMin=` + new Date().toISOString(), {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
       .then(res => res.json())
       .then(data => {
         setEvents(data.items || []);
       });
-  }, [accessToken, setEvents]);
+  }, [accessToken, setEvents, calendarId]);
 
   if (!events.length) return <div className="text-gray-400 text-center">No upcoming events found.</div>;
 
