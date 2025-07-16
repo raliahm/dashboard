@@ -28,13 +28,25 @@ function Dashboard() {
   const [calendarId, setCalendarId] = useState('primary');
   // Fetch user's calendarId from backend
   useEffect(() => {
-    if (!idToken) return;
+    if (!idToken) {
+      setCalendarId('primary');
+      return;
+    }
     fetch('/api/calendar', {
       headers: { Authorization: `Bearer ${idToken}` },
     })
       .then(res => res.json())
       .then(data => {
-        if (data.calendarId) setCalendarId(data.calendarId);
+        if (data.calendarId) {
+          setCalendarId(data.calendarId);
+        } else if (data.error) {
+          setCalendarId('primary');
+          alert('Could not fetch your calendar: ' + data.error);
+        }
+      })
+      .catch(err => {
+        setCalendarId('primary');
+        alert('Could not fetch your calendar: ' + err.message);
       });
   }, [idToken]);
 
