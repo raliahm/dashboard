@@ -40,6 +40,7 @@ function Dashboard() {
   const [customCalendarId, setCustomCalendarId] = useState('');
   // User calendar options: always user's, plus any added by user
   const [calendarOptions, setCalendarOptions] = useState([{ value: calendarId }]);
+  const [calendarIframeError, setCalendarIframeError] = useState(false);
   // Fetch user's calendarId from backend
   useEffect(() => {
     if (!idToken) {
@@ -290,45 +291,64 @@ function Dashboard() {
             <PomodoroTimer />
           </article>
         </div>
-        {/* Google Calendar Card (iframe embed with dynamic input) */}
+        {/* Google Calendar Card (iframe embed with dynamic input and error handling) */}
         <div className="dashboard-card calendar-card">
           <h2 className="text-xl font-bold text-blue-700 mb-2 text-center">Google Calendar</h2>
-          <div className="flex flex-col items-center mb-2">
-            <input
-              className="border border-blue-200 rounded px-2 py-1 text-xs mt-1"
-              placeholder="Paste any calendar ID (public or shared)"
-              value={customCalendarId}
-              onChange={e => setCustomCalendarId(e.target.value)}
-              style={{ width: 260 }}
-            />
-            <button
-              className="mt-2 px-3 py-1 bg-blue-400 text-white rounded hover:bg-blue-600 text-xs"
-              onClick={() => {
-                if (customCalendarId && !calendarOptions.some(opt => opt.value === customCalendarId)) {
-                  setCalendarOptions([...calendarOptions, { value: customCalendarId }]);
-                }
-              }}
-              type="button"
-            >Add Calendar</button>
+          <form
+            className="flex flex-col items-center gap-2 mb-2"
+            onSubmit={e => {
+              e.preventDefault();
+              if (customCalendarId && !calendarOptions.some(opt => opt.value === customCalendarId)) {
+                setCalendarOptions([...calendarOptions, { value: customCalendarId }]);
+              }
+            }}
+            autoComplete="off"
+          >
+            <label htmlFor="calendar-input" className="text-xs text-blue-700">Add or select a calendar ID:</label>
+            <div className="flex gap-2 w-full justify-center">
+              <input
+                id="calendar-input"
+                className="border border-blue-200 rounded px-2 py-1 text-xs"
+                placeholder="Paste any calendar ID (public or shared)"
+                value={customCalendarId}
+                onChange={e => {
+                  setCustomCalendarId(e.target.value);
+                  setCalendarIframeError(false);
+                }}
+                style={{ width: 220 }}
+              />
+              <button
+                className="px-3 py-1 bg-blue-400 text-white rounded hover:bg-blue-600 text-xs"
+                type="submit"
+              >Add</button>
+            </div>
             <select
               id="calendar-select"
-              className="border border-blue-300 rounded px-2 py-1 mt-2"
+              className="border border-blue-300 rounded px-2 py-1 mt-1 w-[240px]"
               value={customCalendarId || calendarId}
-              onChange={e => setCustomCalendarId(e.target.value)}
+              onChange={e => {
+                setCustomCalendarId(e.target.value);
+                setCalendarIframeError(false);
+              }}
             >
               {calendarOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.value}</option>
               ))}
             </select>
-          </div>
+          </form>
           <div className="calendar-events-container" style={{ maxHeight: 400, overflowY: 'auto', width: '100%' }}>
-            <iframe
-              src={`https://calendar.google.com/calendar/embed?src=${encodeURIComponent(customCalendarId || calendarId)}&ctz=auto`}
-              style={{ border: 0, width: '100%', minHeight: 400 }}
-              frameBorder="0"
-              scrolling="no"
-              title="Google Calendar"
-            ></iframe>
+            {!calendarIframeError ? (
+              <iframe
+                src={`https://calendar.google.com/calendar/embed?src=${encodeURIComponent(customCalendarId || calendarId)}&ctz=auto`}
+                style={{ border: 0, width: '100%', minHeight: 400 }}
+                frameBorder="0"
+                scrolling="no"
+                title="Google Calendar"
+                onError={() => setCalendarIframeError(true)}
+              ></iframe>
+            ) : (
+              <div className="text-red-500 text-center p-4">Could not load this calendar. Make sure it is public or shared.</div>
+            )}
           </div>
         </div>
       {/* Attended Classes Tracker Card */}
