@@ -24,15 +24,19 @@ function Dashboard() {
 
   useEffect(() => {
     if (!user) return;
-    fetch('/api/todos', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: user.sub })
-    })
-      .then(res => res.json())
+    setLoading(true);
+    fetch('/api/todos')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch todos');
+        return res.json();
+      })
       .then(data => {
         setItems(data);
         setLoading(false);
+      })
+      .catch(err => {
+        setLoading(false);
+        alert('Error loading todos: ' + err.message);
       });
   }, [user]);
 
@@ -87,29 +91,37 @@ function Dashboard() {
 
   const doneCount = items.filter(item => item.done).length;
 
-  // Google login with calendar scope
-  const login = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      // Get user info from id_token
-      const decoded = jwtDecode(tokenResponse.id_token);
-      setUser(decoded);
-      setAccessToken(tokenResponse.access_token);
-    },
-    onError: () => alert('Login Failed'),
-    scope: 'https://www.googleapis.com/auth/calendar.readonly openid profile email',
-    flow: 'implicit',
-  });
+  // Google login with calendar scope using GoogleLogin component
+
 
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <h2 className="mb-4 text-lg font-semibold">Sign in to continue</h2>
-        <button
-          onClick={() => login()}
-          className="bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600"
-        >
-          Sign in with Google
-        </button>
+        <GoogleLogin
+          onSuccess={credentialResponse => {
+            if (credentialResponse.credential) {
+              try {
+                const decoded = jwtDecode(credentialResponse.credential);
+                setUser(decoded);
+              } catch (err) {
+                alert('Failed to decode id_token: ' + err.message);
+              }
+            } else {
+              alert('No credential returned.');
+            }
+          }}
+          onError={() => alert('Login Failed')}
+          useOneTap
+        />
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <h2 className="mb-4 text-lg font-semibold">Loading your dashboard...</h2>
       </div>
     );
   }
