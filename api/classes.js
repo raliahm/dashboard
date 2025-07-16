@@ -1,5 +1,13 @@
 import { createClient } from '@libsql/client';
 
+import { getServerSession } from "next-auth";
+import { authOptions } from "./auth/[...nextauth]"; // adjust import if needed
+
+const session = await getServerSession(req, res, authOptions);
+const userId = session?.user?.id;
+
+if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
 const db = createClient({
   url: process.env.TURSO_DATABASE_URL,
   authToken: process.env.TURSO_AUTH_TOKEN,
