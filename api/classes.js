@@ -55,38 +55,19 @@ export default async function handler(req, res) {
       });
       return res.status(201).json(result.rows[0]);
     }
-
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
     // PATCH: update a class (increment/decrement attended)
     if (req.method === 'PATCH') {
-      let id = req.query.id || dynamicId;
+      const {id, name, attended, total } = req.body;
+  
       if (!id) id = req.body.id;
-      const { name, attended, total } = req.body;
       if (!id) return res.status(400).json({ error: 'Missing id' });
       await db.execute({
         sql: 'UPDATE attended_classes SET name = ?, attended = ?, total = ? WHERE id = ? AND user_id = ?',
         args: [name, attended, total, id, userId],
       });
-      const updated = await db.execute({
-        sql: 'SELECT * FROM attended_classes WHERE id = ? AND user_id = ?',
-        args: [id, userId],
-      });
-      return res.status(200).json(updated.rows[0]);
-    }
-
-    // DELETE: delete a class
-    if (req.method === 'DELETE') {
-      let id = req.query.id || dynamicId;
-      if (!id) id = req.body.id;
-      if (!id) return res.status(400).json({ error: 'Missing id' });
-      await db.execute({
-        sql: 'DELETE FROM attended_classes WHERE id = ? AND user_id = ?',
-        args: [id, userId],
-      });
       return res.status(200).json({ success: true });
     }
-
-    return res.status(405).json({ error: 'Method not allowed' });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-}
+  } 
