@@ -1,0 +1,3 @@
+<!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
+
+This workspace is a monorepo for a dashboard app with a React (Vite) frontend and a Node.js/Express backend. The backend will later use Postgres for persistent storage. The dashboard features a todo-list, Google Calendar integration, class attendance tracker, homework/task tracker, and a Canvas-style due date overview. The frontend should use a cottagecore/pastel theme with animated, interactive UI elements.
