@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useGoogleLogin } from '@react-oauth/google';
 import './App.css';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
@@ -14,10 +15,12 @@ function App() {
 
 function Dashboard() {
   const [user, setUser] = useState(null);
+  const [accessToken, setAccessToken] = useState(null);
   const [newItem, setNewItem] = useState("");
   const [items, setItems] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [calendarEvents, setCalendarEvents] = useState([]);
 
   useEffect(() => {
     if (!user) return;
@@ -84,19 +87,29 @@ function Dashboard() {
 
   const doneCount = items.filter(item => item.done).length;
 
+  // Google login with calendar scope
+  const login = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      // Get user info from id_token
+      const decoded = jwtDecode(tokenResponse.id_token);
+      setUser(decoded);
+      setAccessToken(tokenResponse.access_token);
+    },
+    onError: () => alert('Login Failed'),
+    scope: 'https://www.googleapis.com/auth/calendar.readonly openid profile email',
+    flow: 'implicit',
+  });
+
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <h2 className="mb-4 text-lg font-semibold">Sign in to continue</h2>
-        <GoogleLogin
-          onSuccess={credentialResponse => {
-            const decoded = jwtDecode(credentialResponse.credential);
-            setUser(decoded);
-          }}
-          onError={() => {
-            alert('Login Failed');
-          }}
-        />
+        <button
+          onClick={() => login()}
+          className="bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600"
+        >
+          Sign in with Google
+        </button>
       </div>
     );
   }
@@ -171,21 +184,16 @@ function Dashboard() {
         </div>
         {/* Google Calendar Card */}
         <div className="dashboard-card calendar-card">
-          <h2 className="text-xl font-bold text-blue-700 mb-2 text-center">Google Calendar</h2>
-          <div className="calendar-iframe-container">
-            <iframe
-              src="https://calendar.google.com/calendar/embed?src=6148479ceed98b2e30aaf54635cfe5f2ed243b4e7fd5a90265a6885a654fa608%40group.calendar.google.com&ctz=America%2FNew_York"
-              style={{ border: 0 }}
-              width="100%"
-              height="100%"
-              frameBorder="0"
-              scrolling="no"
-              title="Google Calendar"
-              allowFullScreen
-            ></iframe>
+          <h2 className="text-xl font-bold text-blue-700 mb-2 text-center">Your Google Calendar Events</h2>
+          <div className="calendar-events-container" style={{ maxHeight: 300, overflowY: 'auto', width: '100%' }}>
+            {accessToken ? (
+              <UserCalendar accessToken={accessToken} events={calendarEvents} setEvents={setCalendarEvents} />
+            ) : (
+              <div className="text-gray-500 text-center">Sign in to view your events.</div>
+            )}
           </div>
         </div>
-        {/* Attended Classes Tracker Card */}
+      {/* Attended Classes Tracker Card */}
         <div className="dashboard-card attended-card">
           <h2 className="text-xl font-bold text-green-700 mb-2 text-center">📚 Attended Classes Tracker</h2>
           <AttendedClassesTracker user={user} />
@@ -194,6 +202,36 @@ function Dashboard() {
     </div>
   );
 }
+
+// Fetch and display user's Google Calendar events
+function UserCalendar({ accessToken, events, setEvents }) {
+  useEffect(() => {
+    if (!accessToken) return;
+    fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?maxResults=10&orderBy=startTime&singleEvents=true&timeMin=' + new Date().toISOString(), {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+      .then(res => res.json())
+      .then(data => {
+        setEvents(data.items || []);
+      });
+  }, [accessToken, setEvents]);
+
+  if (!events.length) return <div className="text-gray-400 text-center">No upcoming events found.</div>;
+
+  return (
+    <ul className="flex flex-col gap-2 list-none p-0">
+      {events.map(event => (
+        <li key={event.id} className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 shadow-sm">
+          <div className="font-semibold text-blue-800">{event.summary || 'No Title'}</div>
+          <div className="text-xs text-blue-600">
+            {event.start?.dateTime ? new Date(event.start.dateTime).toLocaleString() : event.start?.date || 'All day'}
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+    
 
 function PomodoroTimer() {
   const [minutes, setMinutes] = useState(25);
