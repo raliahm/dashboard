@@ -282,7 +282,13 @@ const addItem = (e) => {
               alert('No credential returned.');
             }
           }}
-          onError={() => alert('Login Failed')}
+          onError={() => {
+            alert('Login Failed. Please try again.');
+            setUser(null);
+            setIdToken(null);
+            localStorage.removeItem('user');
+            localStorage.removeItem('idToken');
+          }}
           useOneTap
         />
       </div>
@@ -293,12 +299,36 @@ const addItem = (e) => {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <h2 className="mb-4 text-lg font-semibold">Loading your dashboard...</h2>
+        <button
+          className="mt-4 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+          onClick={() => {
+            setUser(null);
+            setIdToken(null);
+            localStorage.removeItem('user');
+            localStorage.removeItem('idToken');
+          }}
+        >
+          Sign out
+        </button>
       </div>
     );
   }
 
   return (
     <div className="dashboard-outer">
+      <div className="flex justify-end p-2">
+        <button
+          className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+          onClick={() => {
+            setUser(null);
+            setIdToken(null);
+            localStorage.removeItem('user');
+            localStorage.removeItem('idToken');
+          }}
+        >
+          Sign out
+        </button>
+      </div>
       <div className="dashboard-row">
         {/* Todo List Card */}
         <div className="dashboard-card task-card">
