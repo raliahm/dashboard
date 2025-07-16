@@ -166,11 +166,24 @@ function Dashboard() {
       headers: { Authorization: `Bearer ${idToken}` },
     })
       .then(res => {
-        if (!res.ok) throw new Error('Failed to fetch todos');
+        if (!res.ok) {
+          if (res.status === 401) {
+            alert('Session expired. Please sign in again.');
+            setUser(null);
+            setIdToken(null);
+            localStorage.removeItem('user');
+            localStorage.removeItem('idToken');
+          }
+          throw new Error('Failed to fetch todos');
+        }
         return res.json();
       })
       .then(data => {
-        setItems(data);
+        if (Array.isArray(data)) {
+          setItems(data);
+        } else {
+          setItems([]);
+        }
         setLoading(false);
       })
       .catch(err => {
@@ -616,9 +629,22 @@ function AssignmentsTrackers({ user, idToken }) {
       method: 'GET',
       headers: { Authorization: `Bearer ${idToken}` },
     })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          if (res.status === 401) {
+            alert('Session expired. Please sign in again.');
+            // Optionally sign out automatically
+          }
+          throw new Error('Failed to fetch assignments');
+        }
+        return res.json();
+      })
       .then(data => {
-        setAssignments(data);
+        if (Array.isArray(data)) {
+          setAssignments(data);
+        } else {
+          setAssignments([]);
+        }
         setLoading(false);
       })
       .catch(err => {
