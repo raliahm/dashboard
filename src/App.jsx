@@ -369,16 +369,7 @@ function Dashboard() {
           </article>
         </div>
         {/* Google Calendar Card */}
-        <div className="dashboard-card calendar-card">
-          <h2 className="text-xl font-bold text-blue-700 mb-2 text-center">Your Google Calendar Events</h2>
-          <div className="calendar-events-container" style={{ maxHeight: 300, overflowY: 'auto', width: '100%' }}>
-            {accessToken ? (
-              <UserCalendar accessToken={accessToken} events={calendarEvents} setEvents={setCalendarEvents} calendarId={calendarId} />
-            ) : (
-              <div className="text-gray-500 text-center">Sign in to view your events.</div>
-            )}
-          </div>
-        </div>
+        <CalendarPicker
       {/* Attended Classes Tracker Card */}
         <div className="dashboard-card attended-card">
           <h2 className="text-xl font-bold text-green-700 mb-2 text-center">📚 Attended Classes Tracker</h2>
