@@ -369,7 +369,7 @@ function Dashboard() {
           </article>
         </div>
         {/* Google Calendar Card */}
-        <CalendarPicker
+        <CalendarPicker />
       {/* Attended Classes Tracker Card */}
         <div className="dashboard-card attended-card">
           <h2 className="text-xl font-bold text-green-700 mb-2 text-center">📚 Attended Classes Tracker</h2>
