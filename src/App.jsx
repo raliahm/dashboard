@@ -321,7 +321,7 @@ function Dashboard() {
             onSubmit={e => {
               e.preventDefault();
               if (customCalendarId && !calendarOptions.some(opt => opt.value === customCalendarId)) {
-                setCalendarOptions([...calendarOptions, { value: customCalendarId, label: customCalendarId }]);
+                setCalendarOptions([...calendarOptions, { value: customCalendarId }]);
               }
             }}
             autoComplete="off"
@@ -365,7 +365,7 @@ function Dashboard() {
               }}
             >
               {calendarOptions.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label || opt.value}</option>
+                <option key={opt.value} value={opt.value}>{opt.value}</option>
               ))}
             </select>
           </form>
