@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     authToken: process.env.TURSO_AUTH_TOKEN,
   });
 
-  // Get id from dynamic route (handle /api/tracker/[id] and query param)
+  // Get id from dynamic route (handle /api/trackers/[id] and query param)
   let id = req.query.id;
   if (!id && req.url) {
     const parts = req.url.split("/");
@@ -40,11 +40,9 @@ export default async function handler(req, res) {
       if (!name || !due_date || typeof completed === 'undefined') {
         return res.status(400).json({ error: 'Missing fields' });
       }
-      const d = new Date(due_date);
-      const formatted_due = `${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}-${d.getFullYear()}`;
       await db.execute({
-        sql: 'UPDATE assignments_tracker SET name = ?, due_date = ?, formatted_due = ?, completed = ? WHERE id = ? AND user_id = ?',
-        args: [name, due_date, formatted_due, completed ? 1 : 0, id, userId],
+        sql: 'UPDATE assignments_tracker SET name = ?, due_date = ?, completed = ? WHERE id = ? AND user_id = ?',
+        args: [name, due_date, completed ? 1 : 0, id, userId],
       });
       const updated = await db.execute({
         sql: 'SELECT * FROM assignments_tracker WHERE id = ? AND user_id = ?',
@@ -68,3 +66,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: error.message });
   }
 }
+

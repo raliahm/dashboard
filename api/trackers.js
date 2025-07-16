@@ -44,48 +44,15 @@ export default async function handler(req, res) {
       if (!name || !due_date) {
         return res.status(400).json({ error: 'Missing fields' });
       }
-      const d = new Date(due_date);
-      const formatted_due = `${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}-${d.getFullYear()}`;
       const result = await db.execute({
-        sql: 'INSERT INTO assignments_tracker (name, due_date, formatted_due, user_id, completed) VALUES (?, ?, ?, ?, ?) RETURNING *',
-        args: [name, due_date, formatted_due, userId, completed ? 1 : 0],
+        sql: 'INSERT INTO assignments_tracker (name, due_date, user_id, completed) VALUES (?, ?, ?, ?) RETURNING *',
+        args: [name, due_date, userId, completed ? 1 : 0],
       });
       const row = result.rows[0];
       row.completed = !!row.completed;
       return res.status(201).json(row);
     }
 
-    // PATCH: Update an assignment (expects id, name, due_date in body)
-    if (req.method === 'PATCH') {
-      const { id, name, due_date, completed } = req.body;
-      if (!id || !name || !due_date || typeof completed === 'undefined') {
-        return res.status(400).json({ error: 'Missing fields' });
-      }
-      const d = new Date(due_date);
-      const formatted_due = `${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}-${d.getFullYear()}`;
-      await db.execute({
-        sql: 'UPDATE assignments_tracker SET name = ?, due_date = ?, formatted_due = ?, completed = ? WHERE id = ? AND user_id = ?',
-        args: [name, due_date, formatted_due, completed ? 1 : 0, id, userId],
-      });
-      const updated = await db.execute({
-        sql: 'SELECT * FROM assignments_tracker WHERE id = ? AND user_id = ?',
-        args: [id, userId],
-      });
-      const row = updated.rows[0];
-      row.completed = !!row.completed;
-      return res.status(200).json(row);
-    }
-
-    // DELETE: Remove an assignment (expects id in body)
-    if (req.method === 'DELETE') {
-      const { id } = req.body;
-      if (!id) return res.status(400).json({ error: 'Missing id' });
-      await db.execute({
-        sql: 'DELETE FROM assignments_tracker WHERE id = ? AND user_id = ?',
-        args: [id, userId],
-      });
-      return res.status(200).json({ success: true });
-    }
 
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (error) {
