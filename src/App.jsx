@@ -9,9 +9,8 @@ function AssignmentTracker() {
   useEffect(() => {
     if (!idToken) return;
     fetch('/api/tracker', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${idToken}` },
-      body: JSON.stringify({})
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${idToken}` }
     })
       .then(res => res.json())
       .then(data => setAssignments(data || []));
@@ -21,7 +20,7 @@ function AssignmentTracker() {
     e.preventDefault();
     if (!newAssignment.name.trim() || !newAssignment.due_date) return;
     fetch('/api/tracker', {
-      method: 'PUT',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${idToken}`
