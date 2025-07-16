@@ -1,6 +1,5 @@
 import { createClient } from '@libsql/client';
 
-
 export default async function handler(req, res) {
   const db = createClient({
     url: process.env.TURSO_DATABASE_URL,
@@ -8,8 +7,9 @@ export default async function handler(req, res) {
   });
 
   try {
+    // GET: fetch all todos for a user (userId required)
     if (req.method === 'GET') {
-      const userId = req.query.userId || req.body.userId;
+      const userId = req.query.userId || req.body?.userId;
       if (!userId) return res.status(401).json({ error: 'Unauthorized' });
       const result = await db.execute({
         sql: 'SELECT * FROM todos WHERE user_id = ? ORDER BY id',
@@ -18,6 +18,7 @@ export default async function handler(req, res) {
       return res.status(200).json(result.rows.map(row => ({ ...row, done: !!row.done })));
     }
 
+    // POST: add a new todo for a user
     if (req.method === 'POST') {
       const { text, done, userId } = req.body;
       if (!userId) return res.status(401).json({ error: 'Unauthorized' });
@@ -28,11 +29,10 @@ export default async function handler(req, res) {
       return res.status(201).json(result.rows[0]);
     }
 
+    // PATCH: update a todo for a user
     if (req.method === 'PATCH') {
-      // Support id from URL param or body
       let id = req.query.id;
       if (!id && req.url) {
-        // Try to extract id from /api/todos/:id
         const match = req.url.match(/\/api\/todos\/(\d+)/);
         if (match) id = match[1];
       }
@@ -50,11 +50,10 @@ export default async function handler(req, res) {
       return res.status(200).json(updated.rows[0]);
     }
 
+    // DELETE: delete a todo for a user
     if (req.method === 'DELETE') {
-      // Support id from URL param or body
       let id = req.query.id;
       if (!id && req.url) {
-        // Try to extract id from /api/todos/:id
         const match = req.url.match(/\/api\/todos\/(\d+)/);
         if (match) id = match[1];
       }

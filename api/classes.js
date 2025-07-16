@@ -1,52 +1,68 @@
 import { createClient } from '@libsql/client';
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "./auth/[...nextauth]"; // adjust import if needed
-
-const session = await getServerSession(req, res, authOptions);
-const userId = session?.user?.id;
-
-if (!userId) return res.status(401).json({ error: "Unauthorized" });
-
-const db = createClient({
-  url: process.env.TURSO_DATABASE_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN,
-});
-
 export default async function handler(req, res) {
-  try {
-    if (req.method === 'GET') {
-      const result = await db.execute('SELECT * FROM attended_classes ORDER BY id');
-      return res.status(200).json(result.rows);
-    }
+  const db = createClient({
+    url: process.env.TURSO_DATABASE_URL,
+    authToken: process.env.TURSO_AUTH_TOKEN,
+  });
 
+  try {
+    // GET: not used by frontend, but could be added if needed
+
+    // POST: fetch all classes for user (if only userId provided), or add a new class
     if (req.method === 'POST') {
-      const { name, attended = 0, total = 0 } = req.body;
+      const { userId, name, attended, total } = req.body;
+      if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+      // If only userId, return all classes for user
+      if (!name) {
+        const result = await db.execute({
+          sql: 'SELECT * FROM classes WHERE user_id = ? ORDER BY id',
+          args: [userId],
+        });
+        return res.status(200).json(result.rows);
+      }
+      // Otherwise, add a new class
       const result = await db.execute({
-        sql: 'INSERT INTO attended_classes (name, attended, total) VALUES (?, ?, ?) RETURNING *',
-        args: [name, attended, total],
+        sql: 'INSERT INTO classes (name, attended, total, user_id) VALUES (?, ?, ?, ?) RETURNING *',
+        args: [name, attended || 0, total, userId],
       });
       return res.status(201).json(result.rows[0]);
     }
 
+    // PATCH: update a class (increment/decrement attended)
     if (req.method === 'PATCH') {
-      const { id, name, attended, total } = req.body;
+      let id = req.query.id;
+      if (!id && req.url) {
+        const match = req.url.match(/\/api\/classes\/(\d+)/);
+        if (match) id = match[1];
+      }
+      if (!id) id = req.body.id;
+      const { name, attended, total, userId } = req.body;
+      if (!id || !userId) return res.status(400).json({ error: 'Missing id or userId' });
       await db.execute({
-        sql: 'UPDATE attended_classes SET name = ?, attended = ?, total = ? WHERE id = ?',
-        args: [name, attended, total, id],
+        sql: 'UPDATE classes SET name = ?, attended = ?, total = ? WHERE id = ? AND user_id = ?',
+        args: [name, attended, total, id, userId],
       });
-      const result = await db.execute({
-        sql: 'SELECT * FROM attended_classes WHERE id = ?',
-        args: [id],
+      const updated = await db.execute({
+        sql: 'SELECT * FROM classes WHERE id = ? AND user_id = ?',
+        args: [id, userId],
       });
-      return res.status(200).json(result.rows[0]);
+      return res.status(200).json(updated.rows[0]);
     }
 
+    // DELETE: delete a class
     if (req.method === 'DELETE') {
-      const { id } = req.body;
+      let id = req.query.id;
+      if (!id && req.url) {
+        const match = req.url.match(/\/api\/classes\/(\d+)/);
+        if (match) id = match[1];
+      }
+      if (!id) id = req.body.id;
+      const userId = req.body.userId;
+      if (!id || !userId) return res.status(400).json({ error: 'Missing id or userId' });
       await db.execute({
-        sql: 'DELETE FROM attended_classes WHERE id = ?',
-        args: [id],
+        sql: 'DELETE FROM classes WHERE id = ? AND user_id = ?',
+        args: [id, userId],
       });
       return res.status(200).json({ success: true });
     }

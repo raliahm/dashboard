@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useGoogleLogin } from '@react-oauth/google';
 import './App.css';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
