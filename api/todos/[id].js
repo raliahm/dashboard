@@ -22,7 +22,6 @@ export default async function handler(req, res) {
       // ignore, will fail below if userId not set
     }
   }
-
   try {
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 

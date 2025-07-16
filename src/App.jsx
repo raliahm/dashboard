@@ -114,13 +114,11 @@ function Dashboard() {
     return stored ? JSON.parse(stored) : null;
   });
   const [idToken, setIdToken] = useState(() => localStorage.getItem('idToken'));
-  const [accessToken, setAccessToken] = useState(null);
   const [newItem, setNewItem] = useState("");
   const [items, setItems] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [calendarEvents, setCalendarEvents] = useState([]);
-  const [calendarId, setCalendarId] = useState('primary');
+  const [setCalendarId] = useState('primary');
   // Fetch user's calendarId from backend
   useEffect(() => {
     if (!idToken) {
@@ -181,26 +179,27 @@ function Dashboard() {
       });
   }, [user, idToken]);
 
-  const addItem = (e) => {
-    e.preventDefault();
-    if (newItem.trim() === "") return;
-    fetch('/api/todos', {
-      method: 'POST',
-      headers: {
-          Authorization: `Bearer ${idToken}`,
-      },
-      body: JSON.stringify({ text: newItem.trim(), done: false })
+const addItem = (e) => {
+  e.preventDefault();
+  if (newItem.trim() === "") return;
+  fetch('/api/todos', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${idToken}`,
+    },
+    body: JSON.stringify({ text: newItem.trim(), done: false })
+  })
+    .then(res => {
+      if (!res.ok) throw new Error('Failed to add todo');
+      return res.json();
     })
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to add todo');
-        return res.json();
-      })
-      .then(added => {
-        setItems([...items, added]);
-        setNewItem("");
-      })
-      .catch(err => alert(err.message));
-  };
+    .then(added => {
+      setItems([...items, added]);
+      setNewItem("");
+    })
+    .catch(err => alert(err.message));
+};
 
   const toggleDone = (id) => {
     const item = items.find(i => i.id === id);
