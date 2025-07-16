@@ -1,6 +1,6 @@
 # Dashboard Monorepo
 
-This project is a single-page dashboard application with a React (Vite) frontend and a Node.js/Express backend. The backend will use Postgres for persistent storage of all task-related items.
+This project is a single-page dashboard application with a React (Vite) frontend and a Node.js/Express backend. The backend will use SQLite for persistent storage of all task-related items.
 
 ## Features
 - Todo-list
