@@ -188,8 +188,7 @@ function Dashboard() {
     fetch('/api/todos', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${idToken}`,
+          Authorization: `Bearer ${idToken}`,
       },
       body: JSON.stringify({ text: newItem.trim(), done: false })
     })
@@ -380,35 +379,6 @@ function Dashboard() {
   );
 }
 
-// Fetch and display user's Google Calendar events
-function UserCalendar({ accessToken, events, setEvents, calendarId }) {
-  useEffect(() => {
-    if (!accessToken || !calendarId) return;
-    fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?maxResults=10&orderBy=startTime&singleEvents=true&timeMin=` + new Date().toISOString(), {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
-      .then(res => res.json())
-      .then(data => {
-        setEvents(data.items || []);
-      });
-  }, [accessToken, setEvents, calendarId]);
-
-  if (!events.length) return <div className="text-gray-400 text-center">No upcoming events found.</div>;
-
-  return (
-    <ul className="flex flex-col gap-2 list-none p-0">
-      {events.map(event => (
-        <li key={event.id} className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 shadow-sm">
-          <div className="font-semibold text-blue-800">{event.summary || 'No Title'}</div>
-          <div className="text-xs text-blue-600">
-            {event.start?.dateTime ? new Date(event.start.dateTime).toLocaleString() : event.start?.date || 'All day'}
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
-}
-    
 
 function PomodoroTimer() {
   const [minutes, setMinutes] = useState(25);
@@ -610,6 +580,7 @@ function AssignmentsTrackers({ user, idToken }) {
     if (!user || !idToken) return;
     setLoading(true);
     fetch('/api/trackers', {
+      method: 'GET',
       headers: { Authorization: `Bearer ${idToken}` },
     })
       .then(res => res.json())
@@ -648,8 +619,7 @@ function AssignmentsTrackers({ user, idToken }) {
   };
 
   const deleteAssignment = (id) => {
-    fetch(`/api/trackers/${id
-}`, {
+    fetch(`/api/trackers/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
