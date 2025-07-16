@@ -103,7 +103,6 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={clientId}>
       <Dashboard />
-      <AssignmentsTrackers />
     </GoogleOAuthProvider>
   );
 }
@@ -260,6 +259,7 @@ function Dashboard() {
 
   const doneCount = items.filter(item => item.done).length;
 
+  <AssignmentsTrackers user={user} idToken={idToken} />
   // Google login with calendar scope using GoogleLogin component
 
 
@@ -630,8 +630,6 @@ function AssignmentsTrackers({ user, idToken }) {
       .then(() => setAssignments(assignments.filter(a => a.id !== id)))
       .catch(err => alert('Error deleting assignment: ' + err.message));
   };
-
-  if (loading) return <div>Loading...</div>;
   
   return (
     <div className="w-full flex flex-col items-center gap-4">
