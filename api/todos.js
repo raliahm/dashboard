@@ -30,7 +30,13 @@ export default async function handler(req, res) {
 
     if (req.method === 'PATCH') {
       // Support id from URL param or body
-      const id = req.query.id || req.body.id;
+      let id = req.query.id;
+      if (!id && req.url) {
+        // Try to extract id from /api/todos/:id
+        const match = req.url.match(/\/api\/todos\/(\d+)/);
+        if (match) id = match[1];
+      }
+      if (!id) id = req.body.id;
       const { text, done, userId } = req.body;
       if (!id || !userId) return res.status(400).json({ error: 'Missing id or userId' });
       await db.execute({
@@ -46,7 +52,13 @@ export default async function handler(req, res) {
 
     if (req.method === 'DELETE') {
       // Support id from URL param or body
-      const id = req.query.id || req.body.id;
+      let id = req.query.id;
+      if (!id && req.url) {
+        // Try to extract id from /api/todos/:id
+        const match = req.url.match(/\/api\/todos\/(\d+)/);
+        if (match) id = match[1];
+      }
+      if (!id) id = req.body.id;
       const userId = req.body.userId;
       if (!id || !userId) return res.status(400).json({ error: 'Missing id or userId' });
       await db.execute({
