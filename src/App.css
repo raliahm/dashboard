@@ -1,3 +1,13 @@
+/* Assignment card: yellow background */
+.assignment-card {
+  background: #fef9c3 !important;
+  border-color: #fde68a !important;
+  margin: 5px !important;
+}
+.assignment-card li {
+  background: #fefcbf !important;
+  border-color: #fde68a !important;
+}
 /* Custom width for calendar select bar */
 .calendar-select {
   width: 260px;
