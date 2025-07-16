@@ -2,6 +2,7 @@ import { createClient } from '@libsql/client';
 import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
+
   const db = createClient({
     url: process.env.TURSO_DATABASE_URL,
     authToken: process.env.TURSO_AUTH_TOKEN,
