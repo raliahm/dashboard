@@ -259,7 +259,6 @@ function Dashboard() {
 
   const doneCount = items.filter(item => item.done).length;
 
-  <AssignmentsTrackers user={user} idToken={idToken} />
   // Google login with calendar scope using GoogleLogin component
 
 
@@ -366,6 +365,11 @@ function Dashboard() {
           <article className="bg-red-50 border-2 border-red-200 rounded-2xl px-6 py-4 shadow-lg text-red-700 text-base font-semibold flex flex-col items-center min-w-[200px]">
             <PomodoroTimer />
           </article>
+        </div>
+        {/* Assignments Card */}
+        <div className="dashboard-card assignments-card">
+          <h2 className="text-xl font-bold text-purple-700 mb-2 text-center">📚 Assignments</h2>
+                  <AssignmentsTrackers user={user} idToken={idToken}  />
         </div>
         {/* Google Calendar Card */}
         <CalendarPicker />
