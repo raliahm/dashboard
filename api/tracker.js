@@ -22,14 +22,20 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Invalid token' });
     }
     const user_id = user.sub;
-    if (req.method === 'GET') {
-      console.log('GET method');
-      const rows = await db.execute(
-        'SELECT id, name, due_date, formatted_due FROM assignments_tracker WHERE user_id = ? ORDER BY due_date ASC',
-        [user_id]
-      );
-      console.log('Fetched assignments:', rows.rows);
-      return res.json(rows.rows);
+      if (req.method === 'GET') {
+        // List all assignments for this user
+        const result = await db.execute('SELECT * FROM assignments_tracker WHERE user_id=?', [user_id]);
+        // Format due date for each assignment
+        const rows = (result.rows || []).map(row => {
+          let formatted_due = row.formatted_due;
+          if (!formatted_due && row.due_date) {
+            const d = new Date(row.due_date);
+            formatted_due = `${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}-${d.getFullYear()}`;
+          }
+          return { ...row, formatted_due };
+        });
+        console.log('Assignments:', rows);
+        return res.json(rows);
     } else if (req.method === 'POST') {
       console.log('POST method');
       let body = req.body;
