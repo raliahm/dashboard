@@ -103,7 +103,6 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={clientId}>
       <Dashboard />
-      <CalendarPicker />
     </GoogleOAuthProvider>
   );
 }
