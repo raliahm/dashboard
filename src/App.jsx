@@ -37,10 +37,14 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [calendarEvents, setCalendarEvents] = useState([]);
   const [calendarId, setCalendarId] = useState('primary');
+  const [customCalendarId, setCustomCalendarId] = useState('');
+  // User calendar options: always user's, plus any added by user
+  const [calendarOptions, setCalendarOptions] = useState([{ value: calendarId }]);
   // Fetch user's calendarId from backend
   useEffect(() => {
     if (!idToken) {
       setCalendarId('primary');
+      setCalendarOptions([{ value: 'primary' }]);
       return;
     }
     fetch('/api/calendar', {
@@ -50,13 +54,16 @@ function Dashboard() {
       .then(data => {
         if (data.calendarId) {
           setCalendarId(data.calendarId);
+          setCalendarOptions([{ value: data.calendarId }]);
         } else if (data.error) {
           setCalendarId('primary');
+          setCalendarOptions([{ value: 'primary' }]);
           alert('Could not fetch your calendar: ' + data.error);
         }
       })
       .catch(err => {
         setCalendarId('primary');
+        setCalendarOptions([{ value: 'primary' }]);
         alert('Could not fetch your calendar: ' + err.message);
       });
   }, [idToken]);
@@ -283,12 +290,40 @@ function Dashboard() {
             <PomodoroTimer />
           </article>
         </div>
-        {/* Google Calendar Card (iframe embed) */}
+        {/* Google Calendar Card (iframe embed with dynamic input) */}
         <div className="dashboard-card calendar-card">
-          <h2 className="text-xl font-bold text-blue-700 mb-2 text-center">Your Google Calendar</h2>
+          <h2 className="text-xl font-bold text-blue-700 mb-2 text-center">Google Calendar</h2>
+          <div className="flex flex-col items-center mb-2">
+            <input
+              className="border border-blue-200 rounded px-2 py-1 text-xs mt-1"
+              placeholder="Paste any calendar ID (public or shared)"
+              value={customCalendarId}
+              onChange={e => setCustomCalendarId(e.target.value)}
+              style={{ width: 260 }}
+            />
+            <button
+              className="mt-2 px-3 py-1 bg-blue-400 text-white rounded hover:bg-blue-600 text-xs"
+              onClick={() => {
+                if (customCalendarId && !calendarOptions.some(opt => opt.value === customCalendarId)) {
+                  setCalendarOptions([...calendarOptions, { value: customCalendarId }]);
+                }
+              }}
+              type="button"
+            >Add Calendar</button>
+            <select
+              id="calendar-select"
+              className="border border-blue-300 rounded px-2 py-1 mt-2"
+              value={customCalendarId || calendarId}
+              onChange={e => setCustomCalendarId(e.target.value)}
+            >
+              {calendarOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.value}</option>
+              ))}
+            </select>
+          </div>
           <div className="calendar-events-container" style={{ maxHeight: 400, overflowY: 'auto', width: '100%' }}>
             <iframe
-              src={`https://calendar.google.com/calendar/embed?src=${encodeURIComponent(calendarId)}&ctz=auto`}
+              src={`https://calendar.google.com/calendar/embed?src=${encodeURIComponent(customCalendarId || calendarId)}&ctz=auto`}
               style={{ border: 0, width: '100%', minHeight: 400 }}
               frameBorder="0"
               scrolling="no"
