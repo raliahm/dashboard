@@ -9,7 +9,12 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const result = await db.execute('SELECT * FROM todos ORDER BY id');
+      const userId = req.query.userId || req.body.userId;
+      if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+      const result = await db.execute({
+        sql: 'SELECT * FROM todos WHERE user_id = ? ORDER BY id',
+        args: [userId],
+      });
       return res.status(200).json(result.rows.map(row => ({ ...row, done: !!row.done })));
     }
 
@@ -24,20 +29,26 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PATCH') {
-      const { id, text, done , userId} = req.body;
+      // Support id from URL param or body
+      const id = req.query.id || req.body.id;
+      const { text, done, userId } = req.body;
+      if (!id || !userId) return res.status(400).json({ error: 'Missing id or userId' });
       await db.execute({
         sql: 'UPDATE todos SET text = ?, done = ? WHERE id = ? AND user_id = ?',
         args: [text, done ? 1 : 0, id, userId],
       });
       const updated = await db.execute({
-        sql: 'SELECT * FROM todos WHERE id = ?',
-        args: [id],
+        sql: 'SELECT * FROM todos WHERE id = ? AND user_id = ?',
+        args: [id, userId],
       });
       return res.status(200).json(updated.rows[0]);
     }
 
     if (req.method === 'DELETE') {
-      const { id, userId } = req.body;
+      // Support id from URL param or body
+      const id = req.query.id || req.body.id;
+      const userId = req.body.userId;
+      if (!id || !userId) return res.status(400).json({ error: 'Missing id or userId' });
       await db.execute({
         sql: 'DELETE FROM todos WHERE id = ? AND user_id = ?',
         args: [id, userId],
