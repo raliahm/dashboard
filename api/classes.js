@@ -36,14 +36,14 @@ export default async function handler(req, res) {
       // If no name, return all classes for user
       if (!name) {
         const result = await db.execute({
-          sql: 'SELECT * FROM classes WHERE user_id = ? ORDER BY id',
+          sql: 'SELECT * FROM attended_classes WHERE user_id = ? ORDER BY id',
           args: [userId],
         });
         return res.status(200).json(result.rows);
       }
       // Otherwise, add a new class
       const result = await db.execute({
-        sql: 'INSERT INTO classes (name, attended, total, user_id) VALUES (?, ?, ?, ?) RETURNING *',
+        sql: 'INSERT INTO attended_classes (name, attended, total, user_id) VALUES (?, ?, ?, ?) RETURNING *',
         args: [name, attended || 0, total, userId],
       });
       return res.status(201).json(result.rows[0]);
@@ -60,11 +60,11 @@ export default async function handler(req, res) {
       const { name, attended, total } = req.body;
       if (!id) return res.status(400).json({ error: 'Missing id' });
       await db.execute({
-        sql: 'UPDATE classes SET name = ?, attended = ?, total = ? WHERE id = ? AND user_id = ?',
+        sql: 'UPDATE attended_classes SET name = ?, attended = ?, total = ? WHERE id = ? AND user_id = ?',
         args: [name, attended, total, id, userId],
       });
       const updated = await db.execute({
-        sql: 'SELECT * FROM classes WHERE id = ? AND user_id = ?',
+        sql: 'SELECT * FROM attended_classes WHERE id = ? AND user_id = ?',
         args: [id, userId],
       });
       return res.status(200).json(updated.rows[0]);
@@ -80,7 +80,7 @@ export default async function handler(req, res) {
       if (!id) id = req.body.id;
       if (!id) return res.status(400).json({ error: 'Missing id' });
       await db.execute({
-        sql: 'DELETE FROM classes WHERE id = ? AND user_id = ?',
+        sql: 'DELETE FROM attended_classes WHERE id = ? AND user_id = ?',
         args: [id, userId],
       });
       return res.status(200).json({ success: true });
