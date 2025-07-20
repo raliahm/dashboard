@@ -690,9 +690,9 @@ function AssignmentsTracker({ user, idToken }) {
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'high': return 'text-red-600';
-      case 'medium': return 'text-yellow-600';
-      default: return 'text-gray-600';
+      case 'high': return 'text-red-600 bg-red-100 border-red-300';
+      case 'medium': return 'text-yellow-600 bg-yellow-100 border-yellow-300';
+      default: return 'text-gray-600 bg-gray-100 border-gray-300';
     }
   };
 
@@ -746,7 +746,14 @@ function AssignmentsTracker({ user, idToken }) {
           <option value="medium">Medium Priority</option>
           <option value="high">High Priority</option>
         </select>
-        <button className="bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600">Add</button>
+        <textarea
+          className="border border-purple-300 rounded px-2 py-1 col-span-2"
+          placeholder="Description (optional)"
+          rows="2"
+          value={newAssignment.description}
+          onChange={e => setNewAssignment({ ...newAssignment, description: e.target.value })}
+        />
+        <button className="bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600 col-span-2">Add</button>
       </form>
       
       <div className="space-y-3">
@@ -756,8 +763,8 @@ function AssignmentsTracker({ user, idToken }) {
               <div className="flex items-center gap-2">
                 <span className="text-lg">{getTypeEmoji(assignment.type)}</span>
                 <h3 className="font-semibold text-purple-800">{assignment.title}</h3>
-                <span className={`text-xs px-2 py-1 rounded ${getPriorityColor(assignment.priority)}`}>
-                  {assignment.priority}
+                <span className={`text-xs px-2 py-1 rounded font-semibold ${getPriorityColor(assignment.priority)} border`}>
+                  {assignment.priority.toUpperCase()}
                 </span>
               </div>
               <button
@@ -767,6 +774,12 @@ function AssignmentsTracker({ user, idToken }) {
                 🗑️
               </button>
             </div>
+            
+            {assignment.description && (
+              <div className="text-sm text-gray-700 mb-2 bg-white p-2 rounded border border-purple-100">
+                {assignment.description}
+              </div>
+            )}
             
             <div className="text-sm text-gray-600 mb-2">
               {assignment.class_name && <span className="mr-3">📚 {assignment.class_name}</span>}
