@@ -50,6 +50,23 @@ async function createTables() {
     `);
     console.log('✅ trackers table created/verified');
 
+    // Create assignments table for assignments, exams, and projects
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS assignments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        type TEXT NOT NULL, 
+        description TEXT,
+        due_date TEXT,
+        class_name TEXT,
+        status TEXT DEFAULT 'pending',
+        priority TEXT DEFAULT 'medium',
+        user_id TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('✅ assignments table created/verified');
+
     console.log('🎉 All tables are ready!');
   } catch (error) {
     console.error('❌ Error creating tables:', error.message);
