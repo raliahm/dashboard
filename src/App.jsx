@@ -167,7 +167,7 @@ function Dashboard() {
     
     // Load todos from API (consistent with other components)
     fetch('/api/todos', {
-      method: 'POST',
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${idToken}`,
@@ -473,7 +473,7 @@ function AttendedClassesTracker({ user, idToken }) {
   useEffect(() => {
     if (!user || !idToken) return;
     fetch('/api/classes', {
-      method: 'POST',
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${idToken}`,
@@ -615,7 +615,7 @@ function AssignmentsTracker({ user, idToken }) {
   useEffect(() => {
     if (!user || !idToken) return;
     fetch('/api/assignments', {
-      method: 'POST',
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${idToken}`,
