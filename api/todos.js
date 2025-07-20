@@ -28,34 +28,23 @@ export default async function handler(req, res) {
   try {
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    // GET: fetch all classes for the logged-in user
+    // GET: fetch all todos for the logged-in user
     if (req.method === 'GET') {
       const result = await db.execute({
-        sql: 'SELECT * FROM classes WHERE user_id = ? ORDER BY id',
+        sql: 'SELECT * FROM todos WHERE user_id = ? ORDER BY id',
         args: [userId],
       });
-      return res.status(200).json(result.rows);
+      return res.status(200).json(result.rows.map(row => ({ ...row, done: !!row.done })));
     }
 
-    // POST: check if body is empty (fetch all classes) or has data (add new class)
+    // POST: add a new todo for the logged-in user
     if (req.method === 'POST') {
-      const { name, attended, total } = req.body;
-      
-      // If body is empty or missing required fields, return all classes
-      if (!name || total === undefined || total === null) {
-        const result = await db.execute({
-          sql: 'SELECT * FROM classes WHERE user_id = ? ORDER BY id',
-          args: [userId],
-        });
-        return res.status(200).json(result.rows);
-      }
-
-      // Add new class
+      const { text, done } = req.body;
       const result = await db.execute({
-        sql: 'INSERT INTO classes (name, attended, total, user_id) VALUES (?, ?, ?, ?) RETURNING *',
-        args: [name, attended || 0, total, userId],
+        sql: 'INSERT INTO todos (text, done, user_id) VALUES (?, ?, ?) RETURNING *',
+        args: [text, done ? 1 : 0, userId],
       });
-      return res.status(201).json(result.rows[0]);
+      return res.status(201).json({ ...result.rows[0], done: !!result.rows[0].done });
     }
 
     return res.status(405).json({ error: 'Method not allowed' });

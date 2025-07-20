@@ -2,7 +2,6 @@ import { createClient } from '@libsql/client';
 import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
-  // Always disable caching for security
   const db = createClient({
     url: process.env.TURSO_DATABASE_URL,
     authToken: process.env.TURSO_AUTH_TOKEN,
@@ -25,37 +24,33 @@ export default async function handler(req, res) {
     }
   }
 
+  const { id } = req.query;
+
   try {
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    if (!id) return res.status(400).json({ error: 'Missing id' });
 
-    // GET: fetch all classes for the logged-in user
-    if (req.method === 'GET') {
-      const result = await db.execute({
-        sql: 'SELECT * FROM classes WHERE user_id = ? ORDER BY id',
-        args: [userId],
+    // PATCH: update todo
+    if (req.method === 'PATCH') {
+      const { text, done } = req.body;
+      await db.execute({
+        sql: 'UPDATE todos SET text = ?, done = ? WHERE id = ? AND user_id = ?',
+        args: [text, done ? 1 : 0, id, userId],
       });
-      return res.status(200).json(result.rows);
+      const updated = await db.execute({
+        sql: 'SELECT * FROM todos WHERE id = ? AND user_id = ?',
+        args: [id, userId],
+      });
+      return res.json({ ...updated.rows[0], done: !!updated.rows[0].done });
     }
 
-    // POST: check if body is empty (fetch all classes) or has data (add new class)
-    if (req.method === 'POST') {
-      const { name, attended, total } = req.body;
-      
-      // If body is empty or missing required fields, return all classes
-      if (!name || total === undefined || total === null) {
-        const result = await db.execute({
-          sql: 'SELECT * FROM classes WHERE user_id = ? ORDER BY id',
-          args: [userId],
-        });
-        return res.status(200).json(result.rows);
-      }
-
-      // Add new class
-      const result = await db.execute({
-        sql: 'INSERT INTO classes (name, attended, total, user_id) VALUES (?, ?, ?, ?) RETURNING *',
-        args: [name, attended || 0, total, userId],
+    // DELETE: delete todo
+    if (req.method === 'DELETE') {
+      await db.execute({
+        sql: 'DELETE FROM todos WHERE id = ? AND user_id = ?',
+        args: [id, userId],
       });
-      return res.status(201).json(result.rows[0]);
+      return res.json({ success: true });
     }
 
     return res.status(405).json({ error: 'Method not allowed' });
