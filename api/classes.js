@@ -34,26 +34,13 @@ export default async function handler(req, res) {
 
   try {
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-
-    // GET: not used by frontend, but could be added if needed
-
-    // POST: fetch all classes for user (if only name not provided), or add a new class
-    if (req.method === 'POST') {
-      const { name, attended, total } = req.body;
-      // If no name, return all classes for user
-      if (!name) {
-        const result = await db.execute({
-          sql: 'SELECT * FROM classes WHERE user_id = ? ORDER BY id',
-          args: [userId],
-        });
-        return res.status(200).json(result.rows);
-      }
-      // Otherwise, add a new class
+    // GET: Fetch all classes for user
+    if (req.method === 'GET') {
       const result = await db.execute({
-        sql: 'INSERT INTO classes (name, attended, total, user_id) VALUES (?, ?, ?, ?) RETURNING *',
-        args: [name, attended || 0, total, userId],
+        sql: 'SELECT * FROM classes WHERE user_id = ? ORDER BY id',
+        args: [userId],
       });
-      return res.status(201).json(result.rows[0]);
+      return res.status(200).json(result.rows);
     }
   } catch (error) {
     return res.status(500).json({ error: error.message });
