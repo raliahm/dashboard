@@ -6,6 +6,8 @@ function CalendarPicker() {
   const [calendarList, setCalendarList] = useState([]);
   const [selectedCalendar, setSelectedCalendar] = useState('');
   const [iframeError, setIframeError] = useState(false);
+  const [icalUrl, setIcalUrl] = useState('');
+  const [calendarMode, setCalendarMode] = useState('google'); // 'google' or 'ical'
 
   // Google OAuth for Calendar API
   const loginForCalendar = useGoogleLogin({
@@ -33,63 +35,169 @@ function CalendarPicker() {
       .catch(() => setCalendarList([]));
   }, [accessToken]);
 
-  // No need to fetch events, we'll use the iframe embed
-
   return (
     <div className="dashboard-card calendar-card">
-      <h2 className="text-xl font-bold text-blue-700 mb-2 text-center">Google Calendar Picker</h2>
-      {!accessToken ? (
+      <h2 className="text-xl font-bold text-blue-700 mb-2 text-center">📅 Calendar Picker</h2>
+      
+      {/* Mode Toggle */}
+      <div className="flex gap-2 mb-4 justify-center">
         <button
-          className="bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition"
-          onClick={() => loginForCalendar()}
+          className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+            calendarMode === 'google' 
+              ? 'bg-blue-500 text-white' 
+              : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+          }`}
+          onClick={() => setCalendarMode('google')}
         >
-          Connect Google Calendar
+          🔗 Google Calendar
         </button>
+        <button
+          className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+            calendarMode === 'ical' 
+              ? 'bg-purple-500 text-white' 
+              : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+          }`}
+          onClick={() => setCalendarMode('ical')}
+        >
+          📋 iCal Feed
+        </button>
+      </div>
+
+      {calendarMode === 'google' ? (
+        // Google Calendar Mode
+        !accessToken ? (
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition w-full"
+            onClick={() => loginForCalendar()}
+          >
+            Connect Google Calendar
+          </button>
+        ) : (
+          <>
+            <div className="flex items-center gap-2 mb-2">
+              <select
+                className="border border-blue-300 rounded px-2 py-1 calendar-select flex-1"
+                value={selectedCalendar}
+                onChange={e => {
+                  setSelectedCalendar(e.target.value);
+                  setIframeError(false);
+                }}
+              >
+                {calendarList.map(cal => (
+                  <option key={cal.id} value={cal.id}>
+                    {cal.summary}
+                  </option>
+                ))}
+              </select>
+              <button
+                className="bg-blue-200 text-blue-700 px-2 py-1 rounded hover:bg-blue-300 transition-colors"
+                onClick={() => {
+                  setAccessToken(null);
+                  setCalendarList([]);
+                  setSelectedCalendar('');
+                  setIframeError(false);
+                }}
+              >
+                Disconnect
+              </button>
+            </div>
+            <div className="calendar-iframe-container" style={{ maxHeight: 400, overflowY: 'auto', width: '100%' }}>
+              {!iframeError && selectedCalendar ? (
+                <iframe
+                  src={`https://calendar.google.com/calendar/embed?src=${encodeURIComponent(selectedCalendar)}&ctz=auto`}
+                  style={{ border: 0, width: '100%', minHeight: 400 }}
+                  frameBorder="0"
+                  scrolling="no"
+                  title="Google Calendar"
+                  onError={() => setIframeError(true)}
+                ></iframe>
+              ) : selectedCalendar ? (
+                <div className="text-red-500 text-center p-4 bg-red-50 border border-red-200 rounded-lg">
+                  ⚠️ Could not load this calendar. Make sure it is public or shared.
+                </div>
+              ) : (
+                <div className="text-blue-600 text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  📅 Select a calendar from the dropdown above
+                </div>
+              )}
+            </div>
+          </>
+        )
       ) : (
-        <>
-          <div className="flex items-center gap-2 mb-2">
-            <select
-              className="border border-blue-300 rounded px-2 py-1 calendar-select"
-              value={selectedCalendar}
-              onChange={e => {
-                setSelectedCalendar(e.target.value);
-                setIframeError(false);
-              }}
-            >
-              {calendarList.map(cal => (
-                <option key={cal.id} value={cal.id}>
-                  {cal.summary} ({cal.id})
-                </option>
-              ))}
-            </select>
-            <button
-              className="bg-blue-200 text-blue-700 px-2 py-1 rounded hover:bg-blue-300"
-              onClick={() => {
-                setAccessToken(null);
-                setCalendarList([]);
-                setSelectedCalendar('');
-                setIframeError(false);
-              }}
-            >
-              Disconnect
-            </button>
+        // iCal Feed Mode
+        <div className="space-y-4">
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+            <label className="block text-sm font-medium text-purple-700 mb-2">
+              iCal Feed URL (webcal:// or https://)
+            </label>
+            <input
+              type="url"
+              className="w-full border border-purple-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
+              placeholder="https://calendar.example.com/calendar.ics"
+              value={icalUrl}
+              onChange={(e) => setIcalUrl(e.target.value)}
+            />
+            <p className="text-xs text-purple-600 mt-1">
+              Common sources: Outlook, Apple Calendar, Canvas LMS, university calendars
+            </p>
           </div>
-          <div className="calendar-iframe-container" style={{ maxHeight: 400, overflowY: 'auto', width: '100%' }}>
-            {!iframeError && selectedCalendar ? (
-              <iframe
-                src={`https://calendar.google.com/calendar/embed?src=${encodeURIComponent(selectedCalendar)}&ctz=auto`}
-                style={{ border: 0, width: '100%', minHeight: 400 }}
-                frameBorder="0"
-                scrolling="no"
-                title="Google Calendar"
-                onError={() => setIframeError(true)}
-              ></iframe>
-            ) : selectedCalendar ? (
-              <div className="text-red-500 text-center p-4">Could not load this calendar. Make sure it is public or shared.</div>
-            ) : null}
-          </div>
-        </>
+          
+          {icalUrl && (
+            <div className="calendar-iframe-container" style={{ maxHeight: 400, overflowY: 'auto' }}>
+              <ICalViewer icalUrl={icalUrl} />
+            </div>
+          )}
+        </div>
       )}
+    </div>
+  );
+}
+
+// Simple ICalViewer component for now
+function ICalViewer({ icalUrl }) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!icalUrl) return;
+    
+    // Simple loading simulation - you can implement actual iCal parsing later
+    setLoading(true);
+    setError('');
+    
+    const timer = setTimeout(() => {
+      setLoading(false);
+      // For now, just show a placeholder
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [icalUrl]);
+
+  if (loading) {
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-2"></div>
+        <div className="text-purple-600">Loading calendar events...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8 bg-red-50 border border-red-200 rounded-lg">
+        <div className="text-red-600">⚠️ {error}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="text-center py-8 bg-purple-50 border border-purple-200 rounded-lg">
+      <div className="text-purple-700">
+        📋 iCal viewer will be implemented here
+      </div>
+      <div className="text-sm text-purple-600 mt-2">
+        URL: {icalUrl}
+      </div>
     </div>
   );
 }
