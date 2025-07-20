@@ -476,7 +476,6 @@ function AttendedClassesTracker({ user, idToken }) {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${idToken}`,
       },
-      body: JSON.stringify({})
     })
       .then(res => res.json())
       .then(data => {
