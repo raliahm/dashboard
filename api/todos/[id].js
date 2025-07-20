@@ -13,7 +13,6 @@ export default async function handler(req, res) {
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const idToken = authHeader.replace('Bearer ', '');
     try {
-      // Verify with Google
       const googleRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`);
       const googleData = await googleRes.json();
       if (googleData && googleData.sub) {
@@ -24,15 +23,14 @@ export default async function handler(req, res) {
     }
   }
 
-  const { id } = req.query;
-
   try {
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-    if (!id) return res.status(400).json({ error: 'Missing id' });
 
-    // PATCH: update todo
+    // PATCH: update a todo for the logged-in user
     if (req.method === 'PATCH') {
       const { text, done } = req.body;
+      const { id } = req.query;
+      if (!id) return res.status(400).json({ error: 'Missing id' });
       await db.execute({
         sql: 'UPDATE todos SET text = ?, done = ? WHERE id = ? AND user_id = ?',
         args: [text, done ? 1 : 0, id, userId],
@@ -41,16 +39,18 @@ export default async function handler(req, res) {
         sql: 'SELECT * FROM todos WHERE id = ? AND user_id = ?',
         args: [id, userId],
       });
-      return res.json({ ...updated.rows[0], done: !!updated.rows[0].done });
+      return res.status(200).json(updated.rows[0]);
     }
 
-    // DELETE: delete todo
+    // DELETE: delete a todo for the logged-in user
     if (req.method === 'DELETE') {
+      const { id } = req.query;
+      if (!id) return res.status(400).json({ error: 'Missing id' });
       await db.execute({
         sql: 'DELETE FROM todos WHERE id = ? AND user_id = ?',
         args: [id, userId],
       });
-      return res.json({ success: true });
+      return res.status(200).json({ success: true });
     }
 
     return res.status(405).json({ error: 'Method not allowed' });
