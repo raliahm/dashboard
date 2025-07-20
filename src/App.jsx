@@ -164,43 +164,35 @@ function Dashboard() {
   useEffect(() => {
     if (!user || !idToken) return;
     setLoading(true);
-    fetch('/api/todos', {
-      headers: { Authorization: `Bearer ${idToken}` },
-    })
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to fetch todos');
-        return res.json();
-      })
-      .then(data => {
-        setItems(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        setLoading(false);
-        alert('Error loading todos: ' + err.message);
-      });
+    
+    // Load todos from localStorage
+    const savedTodos = localStorage.getItem(`todos_${user.sub}`);
+    if (savedTodos) {
+      try {
+        setItems(JSON.parse(savedTodos));
+      } catch (e) {
+        setItems([]);
+      }
+    } else {
+      setItems([]);
+    }
+    setLoading(false);
   }, [user, idToken]);
 
   const addItem = (e) => {
     e.preventDefault();
     if (newItem.trim() === "") return;
-    fetch('/api/todos', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${idToken}`,
-      },
-      body: JSON.stringify({ text: newItem.trim(), done: false })
-    })
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to add todo');
-        return res.json();
-      })
-      .then(added => {
-        setItems([...items, added]);
-        setNewItem("");
-      })
-      .catch(err => alert(err.message));
+    
+    const newTodo = {
+      id: Date.now(),
+      text: newItem.trim(),
+      done: false
+    };
+    
+    const updatedItems = [...items, newTodo];
+    setItems(updatedItems);
+    localStorage.setItem(`todos_${user.sub}`, JSON.stringify(updatedItems));
+    setNewItem("");
   };
 
   const toggleDone = (id) => {
@@ -500,7 +492,13 @@ function AttendedClassesTracker({ user, idToken }) {
     })
       .then(res => res.json())
       .then(data => {
-        setClasses(data);
+        // Ensure data is an array
+        setClasses(Array.isArray(data) ? data : []);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to load classes:', err);
+        setClasses([]); // Set empty array on error
         setLoading(false);
       });
   }, [user, idToken]);
@@ -517,7 +515,8 @@ function AttendedClassesTracker({ user, idToken }) {
       body: JSON.stringify({ ...cls, attended: cls.attended + 1 })
     })
       .then(res => res.json())
-      .then(updated => setClasses(classes.map(c => c.id === id ? updated : c)));
+      .then(updated => setClasses(classes.map(c => c.id === id ? updated : c)))
+      .catch(err => console.error('Failed to increment class:', err));
   };
   const decrement = (id) => {
     const cls = classes.find(c => c.id === id);
@@ -531,7 +530,8 @@ function AttendedClassesTracker({ user, idToken }) {
       body: JSON.stringify({ ...cls, attended: cls.attended - 1 })
     })
       .then(res => res.json())
-      .then(updated => setClasses(classes.map(c => c.id === id ? updated : c)));
+      .then(updated => setClasses(classes.map(c => c.id === id ? updated : c)))
+      .catch(err => console.error('Failed to decrement class:', err));
   };
   const addClass = (e) => {
     e.preventDefault();
@@ -546,9 +546,12 @@ function AttendedClassesTracker({ user, idToken }) {
     })
       .then(res => res.json())
       .then(added => {
-        setClasses([...classes, added]);
-        setNewClass({ name: '', attended: 0, total: 0 });
-      });
+        if (added && added.id) {
+          setClasses([...classes, added]);
+          setNewClass({ name: '', attended: 0, total: 0 });
+        }
+      })
+      .catch(err => console.error('Failed to add class:', err));
   };
   const deleteClass = (id) => {
     fetch(`/api/classes/${id}`, {
@@ -560,7 +563,8 @@ function AttendedClassesTracker({ user, idToken }) {
       body: JSON.stringify({})
     })
       .then(res => res.json())
-      .then(() => setClasses(classes.filter(c => c.id !== id)));
+      .then(() => setClasses(classes.filter(c => c.id !== id)))
+      .catch(err => console.error('Failed to delete class:', err));
   };
 
   if (loading) return <div>Loading...</div>;
@@ -585,7 +589,7 @@ function AttendedClassesTracker({ user, idToken }) {
         <button className="bg-green-400 text-white px-3 py-1 rounded hover:bg-green-500">Add</button>
       </form>
       <div className="w-full flex flex-wrap gap-3 justify-center">
-        {classes.map(cls => (
+        {classes && classes.length > 0 ? classes.map(cls => (
           <div key={cls.id} className="attended-card">
             <span className="font-semibold text-green-800 mb-2 text-center">{cls.name}</span>
             <div className="flex items-center gap-2 mb-2">
@@ -595,7 +599,11 @@ function AttendedClassesTracker({ user, idToken }) {
               <button onClick={() => deleteClass(cls.id)} className="ml-2 text-red-400 hover:text-red-700">🗑️</button>
             </div>
           </div>
-        ))}
+        )) : (
+          <div className="text-gray-500 text-center py-4">
+            No classes added yet. Add your first class above!
+          </div>
+        )}
       </div>
     </div>
   );
