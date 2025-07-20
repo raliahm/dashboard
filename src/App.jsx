@@ -785,11 +785,11 @@ function AssignmentsTracker({ user, idToken }) {
           </div>
         </div>
       </div>
-      
+      <br/>
       {/* Agenda-Style List */}
       <div className="assignments-list flex-1">
         {assignments && assignments.length > 0 ? (
-          <div className="space-y-2">
+          <div className="space-y-1">
             {assignments
               .sort((a, b) => {
                 // Sort by due date first, then by priority
@@ -803,100 +803,90 @@ function AssignmentsTracker({ user, idToken }) {
               .map(assignment => (
                 <div 
                   key={assignment.id} 
-                  className="bg-purple-50 border border-purple-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow"
+                  className="bg-purple-50 border border-purple-200 rounded-lg p-2 shadow-sm hover:shadow-md transition-shadow"
                 >
-                  {/* Main assignment line */}
-                  <div className="flex items-center justify-between gap-3 mb-2">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className="text-lg flex-shrink-0">{getTypeEmoji(assignment.type)}</span>
-                      <div className="flex gap-2">
-                        <span className={`text-xs px-2 py-1 rounded-full font-semibold ${getStatusColor(assignment.status)} border`}>
-                          {assignment.status === 'in_progress' ? 'IN PROGRESS' : assignment.status.toUpperCase()}
-                        </span>
-                        <span className={`text-xs px-2 py-1 rounded-full font-semibold ${getPriorityColor(assignment.priority)} border`}>
-                          {assignment.priority.toUpperCase()}
-                        </span>
-                      </div>
-                      <h3 className="font-semibold text-purple-900 truncate flex-1 text-base">
+                  {/* Single condensed line with all info */}
+                  <div className="flex items-center justify-between gap-2 text-sm">
+                    {/* Left side: Icon, badges, title, class, date */}
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <span className="text-base flex-shrink-0">{getTypeEmoji(assignment.type)}</span>
+                      
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${getStatusColor(assignment.status)} border flex-shrink-0`}>
+                        {assignment.status === 'in_progress' ? 'PROGRESS' : assignment.status.toUpperCase()}
+                      </span>
+                      
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${getPriorityColor(assignment.priority)} border flex-shrink-0`}>
+                        {assignment.priority.toUpperCase()}
+                      </span>
+                      
+                      <span className="font-semibold text-purple-900 truncate">
                         {assignment.title}
-                      </h3>
-                    </div>
-                    <button
-                      onClick={() => deleteAssignment(assignment.id)}
-                      className="text-red-400 hover:text-red-700 text-sm flex-shrink-0 p-1"
-                      title="Delete Assignment"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                  
-                  {/* Details line */}
-                  <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-                    <div className="flex items-center gap-4">
+                      </span>
+                      
                       {assignment.class_name && (
-                        <span className="flex items-center gap-1">
-                          <span>📚</span>
-                          <span className="font-medium">{assignment.class_name}</span>
+                        <span className="text-gray-600 text-xs flex items-center gap-1 flex-shrink-0">
+                          📚 {assignment.class_name}
                         </span>
                       )}
+                      
                       {assignment.due_date && (
-                        <span className="flex items-center gap-1">
-                          <span>📅</span>
-                          <span className="font-medium">
-                            {new Date(assignment.due_date).toLocaleDateString('en-US', {
-                              weekday: 'short',
-                              month: 'short',
-                              day: 'numeric'
-                            })}
-                          </span>
+                        <span className="text-gray-600 text-xs flex items-center gap-1 flex-shrink-0">
+                          📅 {new Date(assignment.due_date).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric'
+                          })}
                         </span>
                       )}
                     </div>
                     
-                    {/* Quick status change buttons */}
-                    <div className="flex gap-1">
+                    {/* Right side: Quick action buttons */}
+                    <div className="flex gap-1 flex-shrink-0">
                       <button
                         onClick={() => updateAssignmentStatus(assignment.id, 'pending')}
-                        className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+                        className={`px-2 py-0.5 rounded text-xs font-semibold transition-colors ${
                           assignment.status === 'pending' 
-                            ? 'bg-red-200 text-red-800 border border-red-300' 
-                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200 border border-gray-300'
+                            ? 'bg-red-200 text-red-800' 
+                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                         }`}
                         title="Mark as Pending"
                       >
-                        Pending
+                        P
                       </button>
                       <button
                         onClick={() => updateAssignmentStatus(assignment.id, 'in_progress')}
-                        className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+                        className={`px-2 py-0.5 rounded text-xs font-semibold transition-colors ${
                           assignment.status === 'in_progress' 
-                            ? 'bg-yellow-200 text-yellow-800 border border-yellow-300' 
-                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200 border border-gray-300'
+                            ? 'bg-yellow-200 text-yellow-800' 
+                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                         }`}
                         title="Mark as In Progress"
                       >
-                        Progress
+                        I
                       </button>
                       <button
                         onClick={() => updateAssignmentStatus(assignment.id, 'completed')}
-                        className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+                        className={`px-2 py-0.5 rounded text-xs font-semibold transition-colors ${
                           assignment.status === 'completed' 
-                            ? 'bg-green-200 text-green-800 border border-green-300' 
-                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200 border border-gray-300'
+                            ? 'bg-green-200 text-green-800' 
+                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                         }`}
                         title="Mark as Completed"
                       >
-                        Done
+                        C
+                      </button>
+                      <button
+                        onClick={() => deleteAssignment(assignment.id)}
+                        className="text-red-400 hover:text-red-700 px-1"
+                        title="Delete Assignment"
+                      >
+                        🗑️
                       </button>
                     </div>
                   </div>
                   
-                  {/* Description (if exists) */}
+                  {/* Description on separate line only if exists */}
                   {assignment.description && (
-                    <div className="text-sm text-gray-700 bg-white p-3 rounded-lg border border-purple-100 mt-2">
-                      <span className="text-xs text-purple-600 font-medium uppercase tracking-wide mb-1 block">
-                        Description
-                      </span>
+                    <div className="text-xs text-gray-600 mt-1 pl-6 italic">
                       {assignment.description}
                     </div>
                   )}
@@ -904,10 +894,10 @@ function AssignmentsTracker({ user, idToken }) {
               ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <div className="text-4xl mb-3">📝</div>
-            <div className="text-gray-500 text-lg font-medium">No assignments yet</div>
-            <div className="text-gray-400 text-sm">Add your first assignment above to get started!</div>
+          <div className="text-center py-8">
+            <div className="text-3xl mb-2">📝</div>
+            <div className="text-gray-500 font-medium">No assignments yet</div>
+            <div className="text-gray-400 text-sm">Add your first assignment above!</div>
           </div>
         )}
       </div>
