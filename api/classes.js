@@ -1,8 +1,15 @@
 import { createClient } from '@libsql/client';
 import fetch from 'node-fetch';
 
+// Support dynamic API routes: /api/classes/[id]
 export default async function handler(req, res) {
-  // Always disable caching for security
+  // Extract id from dynamic route if present
+  let dynamicId = null;
+  if (req.url) {
+    const match = req.url.match(/\/api\/classes\/?(\d+)?/);
+    if (match && match[1]) dynamicId = match[1];
+  }
+
   const db = createClient({
     url: process.env.TURSO_DATABASE_URL,
     authToken: process.env.TURSO_AUTH_TOKEN,
@@ -28,38 +35,28 @@ export default async function handler(req, res) {
   try {
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    // GET: fetch all classes for the logged-in user
-    if (req.method === 'GET') {
-      const result = await db.execute({
-        sql: 'SELECT * FROM classes WHERE user_id = ? ORDER BY id',
-        args: [userId],
-      });
-      return res.status(200).json(result.rows);
-    }
+    // GET: not used by frontend, but could be added if needed
 
-    // POST: check if body is empty (fetch all classes) or has data (add new class)
+    // POST: fetch all classes for user (if only name not provided), or add a new class
     if (req.method === 'POST') {
       const { name, attended, total } = req.body;
-      
-      // If body is empty or missing required fields, return all classes
-      if (!name || total === undefined || total === null) {
+      // If no name, return all classes for user
+      if (!name) {
         const result = await db.execute({
           sql: 'SELECT * FROM classes WHERE user_id = ? ORDER BY id',
           args: [userId],
         });
         return res.status(200).json(result.rows);
       }
-
-      // Add new class
+      // Otherwise, add a new class
       const result = await db.execute({
         sql: 'INSERT INTO classes (name, attended, total, user_id) VALUES (?, ?, ?, ?) RETURNING *',
         args: [name, attended || 0, total, userId],
       });
       return res.status(201).json(result.rows[0]);
     }
-
-    return res.status(405).json({ error: 'Method not allowed' });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
-}
+    
+  } 

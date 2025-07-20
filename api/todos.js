@@ -44,10 +44,11 @@ export default async function handler(req, res) {
         sql: 'INSERT INTO todos (text, done, user_id) VALUES (?, ?, ?) RETURNING *',
         args: [text, done ? 1 : 0, userId],
       });
-      return res.status(201).json({ ...result.rows[0], done: !!result.rows[0].done });
+      return res.status(201).json(result.rows[0]);
     }
 
-    return res.status(405).json({ error: 'Method not allowed' });
+    
+
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }

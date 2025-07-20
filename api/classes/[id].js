@@ -33,11 +33,11 @@ export default async function handler(req, res) {
     if (req.method === 'PATCH') {
       const { name, attended, total } = req.body;
       await db.execute({
-        sql: 'UPDATE attended_classes SET name = ?, attended = ?, total = ? WHERE id = ? AND user_id = ?',
+        sql: 'UPDATE classes SET name = ?, attended = ?, total = ? WHERE id = ? AND user_id = ?',
         args: [name, attended, total, id, userId],
       });
       const updated = await db.execute({
-        sql: 'SELECT * FROM attended_classes WHERE id = ? AND user_id = ?',
+        sql: 'SELECT * FROM classes WHERE id = ? AND user_id = ?',
         args: [id, userId],
       });
       return res.status(200).json(updated.rows[0]);
@@ -45,7 +45,7 @@ export default async function handler(req, res) {
 
     if (req.method === 'DELETE') {
       await db.execute({
-        sql: 'DELETE FROM attended_classes WHERE id = ? AND user_id = ?',
+        sql: 'DELETE FROM classes WHERE id = ? AND user_id = ?',
         args: [id, userId],
       });
       return res.status(200).json({ success: true });
