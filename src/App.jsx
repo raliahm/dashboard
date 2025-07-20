@@ -793,21 +793,21 @@ function AssignmentsTracker({ user, idToken }) {
                   className={`px-2 py-0.5 rounded text-xs transition-colors ${assignment.status === 'pending' ? 'bg-red-200 text-red-800' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
                   title="Mark as Pending"
                 >
-                  P
+                 <b>P</b> 
                 </button>
                 <button
                   onClick={() => updateAssignmentStatus(assignment.id, 'in_progress')}
                   className={`px-2 py-0.5 rounded text-xs transition-colors ${assignment.status === 'in_progress' ? 'bg-yellow-200 text-yellow-800' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
                   title="Mark as In Progress"
                 >
-                  I
+                  <b>I</b>
                 </button>
                 <button
                   onClick={() => updateAssignmentStatus(assignment.id, 'completed')}
                   className={`px-2 py-0.5 rounded text-xs transition-colors ${assignment.status === 'completed' ? 'bg-green-200 text-green-800' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
                   title="Mark as Completed"
                 >
-                  C
+                  <b>C</b>
                 </button>
               </div>
             </div>
