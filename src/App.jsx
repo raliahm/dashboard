@@ -165,34 +165,47 @@ function Dashboard() {
     if (!user || !idToken) return;
     setLoading(true);
     
-    // Load todos from localStorage
-    const savedTodos = localStorage.getItem(`todos_${user.sub}`);
-    if (savedTodos) {
-      try {
-        setItems(JSON.parse(savedTodos));
-      } catch (e) {
+    // Load todos from API (consistent with other components)
+    fetch('/api/todos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({})
+    })
+      .then(res => res.json())
+      .then(data => {
+        setItems(Array.isArray(data) ? data : []);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to load todos:', err);
         setItems([]);
-      }
-    } else {
-      setItems([]);
-    }
-    setLoading(false);
+        setLoading(false);
+      });
   }, [user, idToken]);
 
   const addItem = (e) => {
     e.preventDefault();
     if (newItem.trim() === "") return;
     
-    const newTodo = {
-      id: Date.now(),
-      text: newItem.trim(),
-      done: false
-    };
-    
-    const updatedItems = [...items, newTodo];
-    setItems(updatedItems);
-    localStorage.setItem(`todos_${user.sub}`, JSON.stringify(updatedItems));
-    setNewItem("");
+    fetch('/api/todos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({ text: newItem.trim(), done: false })
+    })
+      .then(res => res.json())
+      .then(added => {
+        if (added && added.id) {
+          setItems([...items, added]);
+          setNewItem("");
+        }
+      })
+      .catch(err => console.error('Failed to add todo:', err));
   };
 
   const toggleDone = (id) => {
