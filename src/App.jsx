@@ -682,9 +682,9 @@ function AssignmentsTracker({ user, idToken }) {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'completed': return 'text-green-700 bg-green-100';
-      case 'in_progress': return 'text-yellow-700 bg-yellow-100';
-      default: return 'text-red-700 bg-red-100';
+      case 'completed': return 'text-green-800 bg-green-100 border-green-300';
+      case 'in_progress': return 'text-yellow-800 bg-yellow-100 border-yellow-300';
+      default: return 'text-red-800 bg-red-100 border-red-300';
     }
   };
 
@@ -756,56 +756,68 @@ function AssignmentsTracker({ user, idToken }) {
         <button className="bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600 col-span-2">Add</button>
       </form>
       
-      <div className="space-y-3">
+      <div className="space-y-2">
         {assignments && assignments.length > 0 ? assignments.map(assignment => (
-          <div key={assignment.id} className="bg-purple-50 border border-purple-200 rounded-lg p-3 shadow-sm">
-            <div className="flex justify-between items-start mb-2">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{getTypeEmoji(assignment.type)}</span>
-                <h3 className="font-semibold text-purple-800">{assignment.title}</h3>
-                <span className={`text-xs px-2 py-1 rounded font-semibold ${getPriorityColor(assignment.priority)} border`}>
+          <div key={assignment.id} className="bg-purple-50 border border-purple-200 rounded-lg p-2 shadow-sm">
+            {/* Main assignment line */}
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <span className="text-sm">{getTypeEmoji(assignment.type)}</span>
+                <span className={`text-xs px-1.5 py-0.5 rounded font-semibold ${getStatusColor(assignment.status)} border`}>
+                  {assignment.status === 'in_progress' ? 'IN PROGRESS' : assignment.status.toUpperCase()}
+                </span>
+                <span className={`text-xs px-1.5 py-0.5 rounded font-semibold ${getPriorityColor(assignment.priority)} border`}>
                   {assignment.priority.toUpperCase()}
                 </span>
+                <h3 className="font-medium text-purple-800 truncate flex-1">{assignment.title}</h3>
               </div>
               <button
                 onClick={() => deleteAssignment(assignment.id)}
-                className="text-red-400 hover:text-red-700 text-sm"
+                className="text-red-400 hover:text-red-700 text-xs flex-shrink-0"
               >
                 🗑️
               </button>
             </div>
             
+            {/* Details line */}
+            <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+              <div className="flex items-center gap-3">
+                {assignment.class_name && <span>📚 {assignment.class_name}</span>}
+                {assignment.due_date && <span>📅 {new Date(assignment.due_date).toLocaleDateString()}</span>}
+              </div>
+              
+              {/* Quick status change buttons */}
+              <div className="flex gap-1">
+                <button
+                  onClick={() => updateAssignmentStatus(assignment.id, 'pending')}
+                  className={`px-2 py-0.5 rounded text-xs transition-colors ${assignment.status === 'pending' ? 'bg-red-200 text-red-800' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                  title="Mark as Pending"
+                >
+                  P
+                </button>
+                <button
+                  onClick={() => updateAssignmentStatus(assignment.id, 'in_progress')}
+                  className={`px-2 py-0.5 rounded text-xs transition-colors ${assignment.status === 'in_progress' ? 'bg-yellow-200 text-yellow-800' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                  title="Mark as In Progress"
+                >
+                  I
+                </button>
+                <button
+                  onClick={() => updateAssignmentStatus(assignment.id, 'completed')}
+                  className={`px-2 py-0.5 rounded text-xs transition-colors ${assignment.status === 'completed' ? 'bg-green-200 text-green-800' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                  title="Mark as Completed"
+                >
+                  C
+                </button>
+              </div>
+            </div>
+            
+            {/* Description (if exists) */}
             {assignment.description && (
-              <div className="text-sm text-gray-700 mb-2 bg-white p-2 rounded border border-purple-100">
+              <div className="text-xs text-gray-700 bg-white p-2 rounded border border-purple-100 mt-1">
                 {assignment.description}
               </div>
             )}
-            
-            <div className="text-sm text-gray-600 mb-2">
-              {assignment.class_name && <span className="mr-3">📚 {assignment.class_name}</span>}
-              {assignment.due_date && <span>📅 {new Date(assignment.due_date).toLocaleDateString()}</span>}
-            </div>
-            
-            <div className="flex gap-2">
-              <button
-                onClick={() => updateAssignmentStatus(assignment.id, 'pending')}
-                className={`px-3 py-1 rounded text-xs ${assignment.status === 'pending' ? 'bg-red-200 text-red-800' : 'bg-gray-100 text-gray-600'}`}
-              >
-                Pending
-              </button>
-              <button
-                onClick={() => updateAssignmentStatus(assignment.id, 'in_progress')}
-                className={`px-3 py-1 rounded text-xs ${assignment.status === 'in_progress' ? 'bg-yellow-200 text-yellow-800' : 'bg-gray-100 text-gray-600'}`}
-              >
-                In Progress
-              </button>
-              <button
-                onClick={() => updateAssignmentStatus(assignment.id, 'completed')}
-                className={`px-3 py-1 rounded text-xs ${assignment.status === 'completed' ? 'bg-green-200 text-green-800' : 'bg-gray-100 text-gray-600'}`}
-              >
-                Completed
-              </button>
-            </div>
           </div>
         )) : (
           <div className="text-gray-500 text-center py-4">
