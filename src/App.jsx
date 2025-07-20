@@ -812,15 +812,15 @@ function AssignmentsTracker({ user, idToken }) {
                       <span className="text-base flex-shrink-0">{getTypeEmoji(assignment.type)}</span>
                       
                       <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${getStatusColor(assignment.status)} border flex-shrink-0`}>
-                        {assignment.status === 'in_progress' ? 'PROGRESS' : assignment.status.toUpperCase()}
+                        <b>{assignment.status === 'in_progress' ? 'PROGRESS' : assignment.status.toUpperCase()}</b>,   
                       </span>
                       
                       <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${getPriorityColor(assignment.priority)} border flex-shrink-0`}>
-                        {assignment.priority.toUpperCase()}
+                        , {assignment.priority.toUpperCase()}
                       </span>
                       
                       <span className="font-semibold text-purple-900 truncate">
-                        {assignment.title}
+                        , <b>{assignment.title}</b>
                       </span>
                       
                       {assignment.class_name && (
