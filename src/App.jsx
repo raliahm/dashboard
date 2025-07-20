@@ -172,7 +172,6 @@ function Dashboard() {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${idToken}`,
       },
-      body: JSON.stringify({})
     })
       .then(res => res.json())
       .then(data => {
@@ -234,7 +233,6 @@ function Dashboard() {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${idToken}`,
       },
-      body: JSON.stringify({})
     })
       .then(res => {
         if (!res.ok) throw new Error('Failed to delete todo');
@@ -550,7 +548,6 @@ function AttendedClassesTracker({ user, idToken }) {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${idToken}`,
       },
-      body: JSON.stringify({})
     })
       .then(res => res.json())
       .then(() => setClasses(classes.filter(c => c.id !== id)))
@@ -619,9 +616,7 @@ function AssignmentsTracker({ user, idToken }) {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${idToken}`,
-      },
-      body: JSON.stringify({})
-    })
+      },    })
       .then(res => res.json())
       .then(data => {
         setAssignments(Array.isArray(data) ? data : []);
