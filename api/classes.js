@@ -46,41 +46,14 @@ export default async function handler(req, res) {
     // POST: add a new todo for the logged-in user
     if (req.method === 'POST') {
       const { name, attended, total } = req.body;
-       // Validate required fields
-      if (!name || !total) {
-        return res.status(400).json({ 
-          error: 'Class name and total sessions are required' 
-        });
-      }
-
-      
-      // Validate numeric fields
-      const attendedCount = parseInt(attended) || 0;
-      const totalCount = parseInt(total);
-      
-      if (totalCount <= 0) {
-        return res.status(400).json({ 
-          error: 'Total sessions must be greater than 0' 
-        });
-      }
-
-      if (attendedCount < 0 || attendedCount > totalCount) {
-        return res.status(400).json({ 
-          error: 'Attended sessions must be between 0 and total sessions' 
-        });
-      }
-
-      // Insert new class into database
+       // Otherwise, add a new class
       const result = await db.execute({
         sql: 'INSERT INTO classes (name, attended, total, user_id) VALUES (?, ?, ?, ?) RETURNING *',
-        args: [name.trim(), attendedCount, totalCount, userId],
+        args: [name, attended || 0, total, userId],
       });
-      
-      if (result.rows.length === 0) {
-        return res.status(500).json({ error: 'Failed to create class' });
-      }
       return res.status(201).json(result.rows[0]);
     }
+      
 
   } catch (error) {
     return res.status(500).json({ error: error.message });
