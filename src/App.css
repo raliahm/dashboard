@@ -435,3 +435,37 @@ body, html, #root {
     padding: 0;
   }
 }
+
+
+.dashboard-card.assignments-card {
+  background: #f3e8ff !important;
+  border-color: #d8b4fe !important;
+  min-width: 500px;
+  max-width: 700px;
+  flex: 1.5 1 500px;
+}
+
+/* Ensure assignments display as a proper list */
+.assignments-list {
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.assignments-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.assignments-list::-webkit-scrollbar-track {
+  background: #f3e8ff;
+  border-radius: 3px;
+}
+
+.assignments-list::-webkit-scrollbar-thumb {
+  background: #d8b4fe;
+  border-radius: 3px;
+}
+
+.assignments-list::-webkit-scrollbar-thumb:hover {
+  background: #c084fc;
+}
