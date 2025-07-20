@@ -1,206 +1,4 @@
-// CalendarPicker: lets user authenticate, lists all calendars, and lets user pick one
-import { useGoogleLogin } from '@react-oauth/google';
 
-function CalendarPicker() {
-  const [accessToken, setAccessToken] = useState(null);
-  const [calendarList, setCalendarList] = useState([]);
-  const [selectedCalendar, setSelectedCalendar] = useState('');
-  const [iframeError, setIframeError] = useState(false);
-  const [icalUrl, setIcalUrl] = useState('');
-  const [calendarMode, setCalendarMode] = useState('google'); // 'google' or 'ical'
-
-  // Google OAuth for Calendar API
-  const loginForCalendar = useGoogleLogin({
-    scope: 'https://www.googleapis.com/auth/calendar.readonly',
-    flow: 'implicit',
-    onSuccess: async (tokenResponse) => {
-      setAccessToken(tokenResponse.access_token);
-    },
-    onError: () => alert('Google Calendar authorization failed'),
-  });
-
-  // Fetch user's calendar list when accessToken is available
-  useEffect(() => {
-    if (!accessToken) return;
-    fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList', {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.items) {
-          setCalendarList(data.items);
-          setSelectedCalendar(data.items.find(cal => cal.primary)?.id || data.items[0]?.id || '');
-        }
-      })
-      .catch(() => setCalendarList([]));
-  }, [accessToken]);
-
-  return (
-    <div className="dashboard-card calendar-card">
-      <h2 className="text-xl font-bold text-blue-700 mb-2 text-center">📅 Calendar Picker</h2>
-      
-      {/* Mode Toggle */}
-      <div className="flex gap-2 mb-4 justify-center">
-        <button
-          className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-            calendarMode === 'google' 
-              ? 'bg-blue-500 text-white' 
-              : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-          }`}
-          onClick={() => setCalendarMode('google')}
-        >
-          🔗 Google Calendar
-        </button>
-        <button
-          className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-            calendarMode === 'ical' 
-              ? 'bg-purple-500 text-white' 
-              : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
-          }`}
-          onClick={() => setCalendarMode('ical')}
-        >
-          📋 iCal Feed
-        </button>
-      </div>
-
-      {calendarMode === 'google' ? (
-        // Google Calendar Mode
-        !accessToken ? (
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition w-full"
-            onClick={() => loginForCalendar()}
-          >
-            Connect Google Calendar
-          </button>
-        ) : (
-          <>
-            <div className="flex items-center gap-2 mb-2">
-              <select
-                className="border border-blue-300 rounded px-2 py-1 calendar-select flex-1"
-                value={selectedCalendar}
-                onChange={e => {
-                  setSelectedCalendar(e.target.value);
-                  setIframeError(false);
-                }}
-              >
-                {calendarList.map(cal => (
-                  <option key={cal.id} value={cal.id}>
-                    {cal.summary}
-                  </option>
-                ))}
-              </select>
-              <button
-                className="bg-blue-200 text-blue-700 px-2 py-1 rounded hover:bg-blue-300 transition-colors"
-                onClick={() => {
-                  setAccessToken(null);
-                  setCalendarList([]);
-                  setSelectedCalendar('');
-                  setIframeError(false);
-                }}
-              >
-                Disconnect
-              </button>
-            </div>
-            <div className="calendar-iframe-container" style={{ maxHeight: 400, overflowY: 'auto', width: '100%' }}>
-              {!iframeError && selectedCalendar ? (
-                <iframe
-                  src={`https://calendar.google.com/calendar/embed?src=${encodeURIComponent(selectedCalendar)}&ctz=auto`}
-                  style={{ border: 0, width: '100%', minHeight: 400 }}
-                  frameBorder="0"
-                  scrolling="no"
-                  title="Google Calendar"
-                  onError={() => setIframeError(true)}
-                ></iframe>
-              ) : selectedCalendar ? (
-                <div className="text-red-500 text-center p-4 bg-red-50 border border-red-200 rounded-lg">
-                  ⚠️ Could not load this calendar. Make sure it is public or shared.
-                </div>
-              ) : (
-                <div className="text-blue-600 text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  📅 Select a calendar from the dropdown above
-                </div>
-              )}
-            </div>
-          </>
-        )
-      ) : (
-        // iCal Feed Mode
-        <div className="space-y-4">
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-            <label className="block text-sm font-medium text-purple-700 mb-2">
-              iCal Feed URL (webcal:// or https://)
-            </label>
-            <input
-              type="url"
-              className="w-full border border-purple-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
-              placeholder="https://calendar.example.com/calendar.ics"
-              value={icalUrl}
-              onChange={(e) => setIcalUrl(e.target.value)}
-            />
-            <p className="text-xs text-purple-600 mt-1">
-              Common sources: Outlook, Apple Calendar, Canvas LMS, university calendars
-            </p>
-          </div>
-          
-          {icalUrl && (
-            <div className="calendar-iframe-container" style={{ maxHeight: 400, overflowY: 'auto' }}>
-              <ICalViewer icalUrl={icalUrl} />
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Simple ICalViewer component for now
-function ICalViewer({ icalUrl }) {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (!icalUrl) return;
-    
-    // Simple loading simulation - you can implement actual iCal parsing later
-    setLoading(true);
-    setError('');
-    
-    const timer = setTimeout(() => {
-      setLoading(false);
-      // For now, just show a placeholder
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, [icalUrl]);
-
-  if (loading) {
-    return (
-      <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-2"></div>
-        <div className="text-purple-600">Loading calendar events...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-8 bg-red-50 border border-red-200 rounded-lg">
-        <div className="text-red-600">⚠️ {error}</div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="text-center py-8 bg-purple-50 border border-purple-200 rounded-lg">
-      <div className="text-purple-700">
-        📋 iCal viewer will be implemented here
-      </div>
-      <div className="text-sm text-purple-600 mt-2">
-        URL: {icalUrl}
-      </div>
-    </div>
-  );
-}
 import { useState, useEffect } from 'react';
 import './App.css';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
@@ -1013,4 +811,275 @@ function AssignmentsTracker({ user, idToken }) {
 }
 
 
+
+// CalendarPicker: lets user authenticate, lists all calendars, and lets user pick one
+import { useGoogleLogin } from '@react-oauth/google';
+
+function CalendarPicker() {
+  const [accessToken, setAccessToken] = useState(null);
+  const [calendarList, setCalendarList] = useState([]);
+  const [selectedCalendar, setSelectedCalendar] = useState('');
+  const [iframeError, setIframeError] = useState(false);
+  const [icalUrl, setIcalUrl] = useState('');
+  const [calendarMode, setCalendarMode] = useState('google'); // 'google' or 'ical'
+
+  // Google OAuth for Calendar API
+  const loginForCalendar = useGoogleLogin({
+    scope: 'https://www.googleapis.com/auth/calendar.readonly',
+    flow: 'implicit',
+    onSuccess: async (tokenResponse) => {
+      setAccessToken(tokenResponse.access_token);
+    },
+    onError: () => alert('Google Calendar authorization failed'),
+  });
+
+  // Fetch user's calendar list when accessToken is available
+  useEffect(() => {
+    if (!accessToken) return;
+    fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.items) {
+          setCalendarList(data.items);
+          setSelectedCalendar(data.items.find(cal => cal.primary)?.id || data.items[0]?.id || '');
+        }
+      })
+      .catch(() => setCalendarList([]));
+  }, [accessToken]);
+
+  return (
+    <div className="dashboard-card calendar-card">
+      <h2 className="text-xl font-bold text-blue-700 mb-2 text-center">📅 Calendar Picker</h2>
+      
+      {/* Mode Toggle */}
+      <div className="flex gap-2 mb-4 justify-center">
+        <button
+          className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+            calendarMode === 'google' 
+              ? 'bg-blue-500 text-white' 
+              : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+          }`}
+          onClick={() => setCalendarMode('google')}
+        >
+          🔗 Google Calendar
+        </button>
+        <button
+          className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+            calendarMode === 'ical' 
+              ? 'bg-purple-500 text-white' 
+              : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+          }`}
+          onClick={() => setCalendarMode('ical')}
+        >
+          📋 iCal Feed
+        </button>
+      </div>
+
+      {calendarMode === 'google' ? (
+        // Google Calendar Mode
+        !accessToken ? (
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition w-full"
+            onClick={() => loginForCalendar()}
+          >
+            Connect Google Calendar
+          </button>
+        ) : (
+          <>
+            <div className="flex items-center gap-2 mb-2">
+              <select
+                className="border border-blue-300 rounded px-2 py-1 calendar-select flex-1"
+                value={selectedCalendar}
+                onChange={e => {
+                  setSelectedCalendar(e.target.value);
+                  setIframeError(false);
+                }}
+              >
+                {calendarList.map(cal => (
+                  <option key={cal.id} value={cal.id}>
+                    {cal.summary}
+                  </option>
+                ))}
+              </select>
+              <button
+                className="bg-blue-200 text-blue-700 px-2 py-1 rounded hover:bg-blue-300 transition-colors"
+                onClick={() => {
+                  setAccessToken(null);
+                  setCalendarList([]);
+                  setSelectedCalendar('');
+                  setIframeError(false);
+                }}
+              >
+                Disconnect
+              </button>
+            </div>
+            <div className="calendar-iframe-container" style={{ maxHeight: 400, overflowY: 'auto', width: '100%' }}>
+              {!iframeError && selectedCalendar ? (
+                <iframe
+                  src={`https://calendar.google.com/calendar/embed?src=${encodeURIComponent(selectedCalendar)}&ctz=auto`}
+                  style={{ border: 0, width: '100%', minHeight: 400 }}
+                  frameBorder="0"
+                  scrolling="no"
+                  title="Google Calendar"
+                  onError={() => setIframeError(true)}
+                ></iframe>
+              ) : selectedCalendar ? (
+                <div className="text-red-500 text-center p-4 bg-red-50 border border-red-200 rounded-lg">
+                  ⚠️ Could not load this calendar. Make sure it is public or shared.
+                </div>
+              ) : (
+                <div className="text-blue-600 text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  📅 Select a calendar from the dropdown above
+                </div>
+              )}
+            </div>
+          </>
+        )
+      ) : (
+        // iCal Feed Mode
+        <div className="space-y-4">
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+            <label className="block text-sm font-medium text-purple-700 mb-2">
+              iCal Feed URL (webcal:// or https://)
+            </label>
+            <input
+              type="url"
+              className="w-full border border-purple-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
+              placeholder="https://calendar.example.com/calendar.ics"
+              value={icalUrl}
+              onChange={(e) => setIcalUrl(e.target.value)}
+            />
+            <p className="text-xs text-purple-600 mt-1">
+              Common sources: Outlook, Apple Calendar, Canvas LMS, university calendars
+            </p>
+          </div>
+          
+          {icalUrl && (
+            <div className="calendar-iframe-container" style={{ maxHeight: 400, overflowY: 'auto' }}>
+              <ICalViewer icalUrl={icalUrl} />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ICalViewer({ icalUrl }) {
+  const [iframeError, setIframeError] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Convert various iCal URL formats to embeddable versions
+  const getEmbeddableUrl = (url) => {
+    if (!url) return null;
+    
+    // Convert webcal:// to https://
+    let embedUrl = url.replace(/^webcal:\/\//, 'https://');
+    
+    // Handle Canvas LMS iCal feeds - they can be embedded directly
+    if (embedUrl.includes('instructure.com') && embedUrl.includes('.ics')) {
+      return embedUrl;
+    }
+    
+    // Handle Outlook/Office 365 calendar feeds
+    if (embedUrl.includes('outlook.live.com') || embedUrl.includes('office.com')) {
+      return embedUrl;
+    }
+    
+    // Handle Google Calendar iCal exports
+    if (embedUrl.includes('calendar.google.com') && embedUrl.includes('.ics')) {
+      // Try to convert to embeddable Google Calendar
+      const calendarId = embedUrl.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+      if (calendarId) {
+        return `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(calendarId[1])}&ctz=auto`;
+      }
+    }
+    
+    // For other services, try the direct URL (many support iframe embedding)
+    return embedUrl;
+  };
+
+  const embedUrl = getEmbeddableUrl(icalUrl);
+
+  const handleIframeLoad = () => {
+    setLoading(false);
+    setIframeError(false);
+  };
+
+  const handleIframeError = () => {
+    setLoading(false);
+    setIframeError(true);
+  };
+
+  if (!embedUrl) {
+    return (
+      <div className="text-center py-6 bg-purple-50 border border-purple-200 rounded-lg">
+        <div className="text-purple-600 mb-2">📋 Invalid Calendar URL</div>
+        <div className="text-sm text-purple-500">
+          Please enter a valid iCal feed URL
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full flex flex-col">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="font-semibold text-purple-700 text-sm">📅 Calendar View</h3>
+        <span className="text-xs text-purple-600 bg-purple-100 px-2 py-1 rounded-full">
+          {icalUrl.includes('instructure.com') ? 'Canvas LMS' : 
+           icalUrl.includes('outlook') ? 'Outlook' :
+           icalUrl.includes('google') ? 'Google Calendar' : 'iCal Feed'}
+        </span>
+      </div>
+
+      {loading && (
+        <div className="text-center py-6">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500 mx-auto mb-2"></div>
+          <div className="text-purple-600 text-sm">Loading calendar...</div>
+        </div>
+      )}
+
+      <div className="flex-1" style={{ minHeight: '350px' }}>
+        {!iframeError ? (
+          <iframe
+            src={embedUrl}
+            style={{ 
+              border: 0, 
+              width: '100%', 
+              height: '100%',
+              minHeight: '350px',
+              display: loading ? 'none' : 'block'
+            }}
+            frameBorder="0"
+            scrolling="auto"
+            title="iCal Calendar"
+            onLoad={handleIframeLoad}
+            onError={handleIframeError}
+            className="rounded-lg"
+          />
+        ) : (
+          <div className="h-full flex items-center justify-center bg-red-50 border border-red-200 rounded-lg">
+            <div className="text-center p-4">
+              <div className="text-red-600 mb-2 text-sm">⚠️ Calendar Display Error</div>
+              <div className="text-xs text-red-500 mb-2">
+                This calendar cannot be embedded directly
+              </div>
+              <a 
+                href={icalUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800 bg-purple-100 hover:bg-purple-200 px-2 py-1 rounded transition-colors"
+              >
+                🔗 Open Calendar Externally
+              </a>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 export default App;
