@@ -1,68 +1,946 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Base styles for proper scrolling */
+* {
+  box-sizing: border-box;
+  /* Hide scrollbars on all elements */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+*::-webkit-scrollbar {
+  display: none; /* Webkit browsers */
 }
-a:hover {
-  color: #535bf2;
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  /* Hide scrollbar for Webkit browsers */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+html::-webkit-scrollbar {
+  display: none; /* Webkit browsers */
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  overflow-x: hidden;
+  position: relative;
+  /* Hide scrollbar for Webkit browsers */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+body::-webkit-scrollbar {
+  display: none; /* Webkit browsers */
+}
+
+#root {
   min-height: 100vh;
+  position: relative;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Dashboard header bar - vertical cottagecore design */
+.dashboard-header-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  margin: 1rem 2rem 2rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 250, 251, 0.9) 100%);
+  border: 2px solid var(--primary-pink);
+  border-radius: 2rem;
+  backdrop-filter: blur(15px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
+.dashboard-header-bar::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(249, 168, 212, 0.1) 0%, transparent 70%);
+  animation: float 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.dashboard-header-bar:hover {
+  transform: translateY(-4px);
+  border-color: #ec4899;
+}
+
+/* Floating cottagecore decorations */
+.dashboard-header-bar::after {
+  content: '🌸 🌻 🌿';
+  position: absolute;
+  top: -1rem;
+  right: 2rem;
+  font-size: 1.25rem;
+  opacity: 0.7;
+  animation: floatDecorations 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* User welcome section - vertical centered */
+.user-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.user-avatar {
+  position: relative;
+  margin-bottom: 0.5rem;
+}
+
+.user-avatar img,
+.user-avatar div {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid var(--primary-pink);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.user-avatar:hover img,
+.user-avatar:hover div {
+  transform: scale(1.15) rotate(5deg);
+  border-color: #ec4899;
+}
+
+/* Animated avatar ring */
+.user-avatar::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 2px solid transparent;
+  border-top-color: var(--primary-purple);
+  border-radius: 50%;
+  animation: avatarSpin 3s linear infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.user-avatar:hover::before {
+  opacity: 1;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.user-greeting {
+  font-size: 1rem;
+  color: #be185d;
   font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  text-shadow: 0 1px 2px rgba(190, 24, 93, 0.1);
+  animation: fadeInUp 0.6s ease-out 0.2s both;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+.user-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #831843;
+  text-shadow: 0 2px 4px rgba(131, 24, 67, 0.1);
+  animation: fadeInUp 0.6s ease-out 0.4s both;
+  background: linear-gradient(135deg, #831843 0%, #be185d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Sign out button - cottagecore vertical design */
+.sign-out-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, var(--primary-yellow) 0%, #f59e0b 100%);
+  border: none;
+  border-radius: 1.5rem;
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+  min-width: 180px;
+  animation: fadeInUp 0.6s ease-out 0.6s both;
+}
+
+.sign-out-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.6s ease;
+}
+
+.sign-out-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.sign-out-btn:hover::before {
+  left: 100%;
+}
+
+.sign-out-btn:active {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.sign-out-icon {
+  font-size: 1.25rem;
+  transition: transform 0.4s ease;
+}
+
+.sign-out-btn:hover .sign-out-icon {
+  transform: rotate(20deg) scale(1.1);
+}
+
+.sign-out-text {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Responsive adjustments for vertical layout */
+@media (max-width: 768px) {
+  .dashboard-header-bar {
+    margin: 0.5rem 1rem 1.5rem;
+    padding: 1.5rem;
+    gap: 1.25rem;
   }
-  a:hover {
-    color: #747bff;
+  
+  .user-avatar img,
+  .user-avatar div {
+    width: 50px;
+    height: 50px;
   }
-  button {
-    background-color: #f9f9f9;
+  
+  .user-greeting {
+    font-size: 0.9rem;
   }
+  
+  .user-name {
+    font-size: 1.25rem;
+  }
+  
+  .sign-out-btn {
+    padding: 0.875rem 1.5rem;
+    font-size: 0.9rem;
+    min-width: 160px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-header-bar {
+    margin: 0.5rem 0.5rem 1rem;
+    padding: 1.25rem;
+    gap: 1rem;
+  }
+  
+  .user-avatar img,
+  .user-avatar div {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .user-greeting {
+    font-size: 0.8rem;
+  }
+  
+  .user-name {
+    font-size: 1.1rem;
+  }
+  
+  .sign-out-btn {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.875rem;
+    min-width: 140px;
+    gap: 0.5rem;
+  }
+  
+  .sign-out-icon {
+    font-size: 1rem;
+  }
+}
+
+/* Cottagecore animation keyframes */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(2deg);
+  }
+}
+
+@keyframes floatDecorations {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.7;
+  }
+  33% {
+    transform: translateY(-5px) translateX(2px);
+    opacity: 0.9;
+  }
+  66% {
+    transform: translateY(-2px) translateX(-1px);
+    opacity: 0.8;
+  }
+}
+
+@keyframes avatarSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced cottagecore touches */
+.dashboard-header-bar {
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(249, 168, 212, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(192, 132, 252, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(187, 247, 208, 0.1) 0%, transparent 50%);
+}
+
+/* Cottagecore decorations for all dashboard cards */
+.dashboard-card {
+  position: relative;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.02);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+}
+
+.dashboard-card::before {
+  content: '';
+  position: absolute;
+  top: -30%;
+  left: -30%;
+  width: 160%;
+  height: 160%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 60%);
+  animation: float 8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.04);
+  border-color: #e2e8f0;
+}
+
+/* Cottagecore button styles - inherited from sign-out button */
+.cottagecore-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--primary-yellow) 0%, #f59e0b 100%);
+  border: none;
+  border-radius: 1rem;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.cottagecore-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.6s ease;
+}
+
+.cottagecore-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.cottagecore-btn:hover::before {
+  left: 100%;
+}
+
+.cottagecore-btn:active {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Size variants for cottagecore buttons */
+.cottagecore-btn-small {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
+}
+
+.cottagecore-btn-medium {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  border-radius: 1rem;
+}
+
+.cottagecore-btn-large {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  border-radius: 1.25rem;
+}
+
+/* Color variants for different components */
+.cottagecore-btn-pink {
+  background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.cottagecore-btn-pink:hover {
+  background: linear-gradient(135deg, #be185d 0%, #9d174d 100%);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.cottagecore-btn-green {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.cottagecore-btn-green:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.cottagecore-btn-purple {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.cottagecore-btn-purple:hover {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.cottagecore-btn-blue {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.cottagecore-btn-blue:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.cottagecore-btn-gray {
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  color: white;
+}
+
+.cottagecore-btn-gray:hover {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Specific card decorations with unique flowers - moved down to be more visible */
+.dashboard-card.task-card::after {
+  content: '🌻 ✨ 🌼';
+  position: absolute;
+  top: 0.5rem;
+  right: 1.5rem;
+  font-size: 1.1rem;
+  opacity: 0.8;
+  animation: floatDecorations 5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dashboard-card.assignments-card::after {
+  content: '🌸 📚 🌿';
+  position: absolute;
+  top: 0.5rem;
+  right: 1.5rem;
+  font-size: 1.1rem;
+  opacity: 0.8;
+  animation: floatDecorations 4.5s ease-in-out infinite 0.5s;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dashboard-card.attended-card::after {
+  content: '🌱 📖 🍃';
+  position: absolute;
+  top: 0.5rem;
+  right: 1.5rem;
+  font-size: 1.1rem;
+  opacity: 0.8;
+  animation: floatDecorations 5.5s ease-in-out infinite 1s;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dashboard-card.calendar-card::after {
+  content: '📅 🌺 ⭐';
+  position: absolute;
+  top: 0.5rem;
+  right: 1.5rem;
+  font-size: 1.1rem;
+  opacity: 0.8;
+  animation: floatDecorations 4s ease-in-out infinite 1.5s;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dashboard-card.ai-scheduler-card::after {
+  content: '🤖 🌙 💫';
+  position: absolute;
+  top: 0.5rem;
+  right: 1.5rem;
+  font-size: 1.1rem;
+  opacity: 0.8;
+  animation: floatDecorations 6s ease-in-out infinite 2s;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dashboard-card.instagram-card::after {
+  content: '📱 🌹 💖';
+  position: absolute;
+  top: 0.5rem;
+  right: 1.5rem;
+  font-size: 1.1rem;
+  opacity: 0.8;
+  animation: floatDecorations 4.8s ease-in-out infinite 2.5s;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dashboard-card.powerbi-card::after {
+  content: '📊 🌻 📈';
+  position: absolute;
+  top: 0.5rem;
+  right: 1.5rem;
+  font-size: 1.1rem;
+  opacity: 0.8;
+  animation: floatDecorations 5.2s ease-in-out infinite 3s;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Enhanced card backgrounds with subtle cottagecore gradients */
+.dashboard-card.task-card {
+  background: #ffffff;
+  border-color: #fef3c7;
+  background-image: linear-gradient(135deg, rgba(254, 243, 199, 0.1) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.dashboard-card.assignments-card {
+  background: #ffffff;
+  border-color: #e0e7ff;
+  background-image: linear-gradient(135deg, rgba(224, 231, 255, 0.1) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.dashboard-card.attended-card {
+  background: #ffffff;
+  border-color: #d1fae5;
+  background-image: linear-gradient(135deg, rgba(209, 250, 229, 0.1) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.dashboard-card.calendar-card {
+  background: #ffffff;
+  border-color: #dbeafe;
+  background-image: linear-gradient(135deg, rgba(219, 234, 254, 0.1) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.dashboard-card.pomodoro-card {
+  background: #ffffff;
+  border-color: #fecaca;
+  background-image: linear-gradient(135deg, rgba(254, 202, 202, 0.1) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.dashboard-card.ai-scheduler-card {
+  background: #ffffff;
+  border-color: #d1fae5;
+  background-image: linear-gradient(135deg, rgba(209, 250, 229, 0.1) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.dashboard-card.instagram-card {
+  background: #ffffff;
+  border-color: #fce7f3;
+  background-image: linear-gradient(135deg, rgba(252, 231, 243, 0.1) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.dashboard-card.powerbi-card {
+  background: #ffffff;
+  border-color: #f3e8ff;
+  background-image: linear-gradient(135deg, rgba(243, 232, 255, 0.1) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+/* Animated sparkles that appear on hover */
+.dashboard-card:hover::before {
+  animation: sparkle 3s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0.1;
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(1.1) rotate(180deg);
+  }
+}
+
+/* Enhanced floating decorations with more movement */
+@keyframes floatDecorations {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px) rotate(0deg);
+    opacity: 0.7;
+  }
+  25% {
+    transform: translateY(-3px) translateX(1px) rotate(2deg);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translateY(-6px) translateX(-1px) rotate(-1deg);
+    opacity: 0.8;
+  }
+  75% {
+    transform: translateY(-2px) translateX(2px) rotate(3deg);
+    opacity: 0.85;
+  }
+}
+
+/* Card content should be above decorative elements */
+.dashboard-card > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Responsive decorations - smaller on mobile and repositioned */
+@media (max-width: 768px) {
+  .dashboard-card::after,
+  .dashboard-header-bar::after {
+    font-size: 0.9rem;
+    top: 0.25rem;
+    right: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-card::after,
+  .dashboard-header-bar::after {
+    font-size: 0.8rem;
+    top: 0.125rem;
+    right: 0.75rem;
+  }
+}
+
+/* Ensure dashboard takes full width */
+.dashboard-outer {
+  width: 100%;
+  min-height: 100vh;
+  padding: 0;
+  margin: 0;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Modern cottagecore white background */
+  background: #ffffff;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(249, 168, 212, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(192, 132, 252, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(187, 247, 208, 0.03) 0%, transparent 50%);
+  /* Hide scrollbar for all browsers */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.dashboard-outer::-webkit-scrollbar {
+  display: none; /* Webkit browsers */
+}
+
+.dashboard-row {
+  width: 100%;
+  padding: 0 1rem 2rem;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Hide scrollbars on all dashboard cards and their containers */
+.dashboard-card,
+.dashboard-card *,
+.calendar-iframe-container,
+.assignments-list {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.dashboard-card::-webkit-scrollbar,
+.dashboard-card *::-webkit-scrollbar,
+.calendar-iframe-container::-webkit-scrollbar,
+.assignments-list::-webkit-scrollbar {
+  display: none; /* Webkit browsers */
+}
+
+/* Cottagecore input and form styles */
+.cottagecore-input,
+.cottagecore-select,
+.cottagecore-textarea {
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid #e5e7eb;
+  border-radius: 1rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #374151;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  position: relative;
+  z-index: 2;
+}
+
+.cottagecore-input::placeholder,
+.cottagecore-textarea::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.cottagecore-input:focus,
+.cottagecore-select:focus,
+.cottagecore-textarea:focus {
+  outline: none;
+  border-color: #ec4899;
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 0 0 3px rgba(236, 72, 153, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Size variants for inputs */
+.cottagecore-input-small {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
+}
+
+.cottagecore-input-large {
+  padding: 1rem 1.25rem;
+  font-size: 1rem;
+  border-radius: 1.25rem;
+}
+
+/* Color variants for different components */
+.cottagecore-input-pink {
+  border-color: #f9a8d4;
+  background: rgba(253, 242, 248, 0.8);
+}
+
+.cottagecore-input-pink:focus {
+  border-color: #ec4899;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 0 0 3px rgba(236, 72, 153, 0.1);
+}
+
+.cottagecore-input-green {
+  border-color: #bbf7d0;
+  background: rgba(240, 253, 244, 0.8);
+}
+
+.cottagecore-input-green:focus {
+  border-color: #10b981;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.cottagecore-input-purple {
+  border-color: #c084fc;
+  background: rgba(237, 233, 254, 0.8);
+}
+
+.cottagecore-input-purple:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.cottagecore-input-blue {
+  border-color: #93c5fd;
+  background: rgba(239, 246, 255, 0.8);
+}
+
+.cottagecore-input-blue:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Retractable sign-out section */
+.dashboard-header-retractable {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  margin: 1rem 2rem 2rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 250, 251, 0.9) 100%);
+  border: 2px solid var(--primary-pink);
+  border-radius: 2rem;
+  backdrop-filter: blur(15px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.05);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: visible;
+  cursor: pointer;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(249, 168, 212, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(192, 132, 252, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(187, 247, 208, 0.1) 0%, transparent 50%);
+  z-index: 10;
+}
+
+.dashboard-header-retractable::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(249, 168, 212, 0.1) 0%, transparent 70%);
+  animation: float 6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.dashboard-header-retractable::after {
+  content: '🌸 🌻 🌿';
+  position: absolute;
+  top: -1rem;
+  right: 2rem;
+  font-size: 1.25rem;
+  opacity: 0.7;
+  animation: floatDecorations 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dashboard-header-retractable:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08);
+  border-color: #ec4899;
+}
+
+.dashboard-header-retractable.collapsed {
+  padding: 1rem 2rem;
+  gap: 0;
+  height: 80px;
+  min-height: 80px;
+  max-height: 80px;
+  overflow: hidden;
+}
+
+.dashboard-header-retractable.collapsed .user-welcome {
+  opacity: 0;
+  transform: translateY(-20px);
+  pointer-events: none;
+  height: 0;
+  overflow: hidden;
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dashboard-header-retractable.collapsed .sign-out-btn {
+  opacity: 0;
+  transform: translateY(-20px);
+  pointer-events: none;
+  height: 0;
+  overflow: hidden;
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dashboard-header-retractable.collapsed .user-avatar {
+  margin-bottom: 0;
+  transform: scale(0.8);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+}
+
+.dashboard-header-retractable .user-welcome {
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dashboard-header-retractable .sign-out-btn {
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Toggle indicator for retractable header */
+.header-toggle-indicator {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1rem;
+  opacity: 0.6;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.dashboard-header-retractable:hover .header-toggle-indicator {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-2px);
+}
+
+.dashboard-header-retractable.collapsed .header-toggle-indicator {
+  transform: translateX(-50%) rotate(180deg);
+}
+
+/* Override any flex centering that might cause issues */
+body {
+  display: block !important;
+  place-items: unset !important;
 }

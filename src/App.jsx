@@ -27,6 +27,28 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [calendarEvents, setCalendarEvents] = useState([]);
   const [calendarId, setCalendarId] = useState('primary');
+  const [headerCollapsed, setHeaderCollapsed] = useState(false);
+
+
+  // Sign out function
+  const signOut = () => {
+    // Clear all user data
+    setUser(null);
+    setIdToken(null);
+    setAccessToken(null);
+    setItems([]);
+    setCalendarEvents([]);
+    setCalendarId('primary');
+    
+    // Clear localStorage
+    localStorage.removeItem('user');
+    localStorage.removeItem('idToken');
+    localStorage.removeItem('accessToken');
+    // Reset any other component states
+    setLoading(false);
+    setEditingId(null);
+    setNewItem("");
+  };
   // Fetch user's calendarId from backend
   useEffect(() => {
     if (!idToken) {
@@ -42,12 +64,12 @@ function Dashboard() {
           setCalendarId(data.calendarId);
         } else if (data.error) {
           setCalendarId('primary');
-          alert('Could not fetch your calendar: ' + data.error);
+          // alert('Could not fetch your calendar: ' + data.error);
         }
       })
       .catch(err => {
         setCalendarId('primary');
-        alert('Could not fetch your calendar: ' + err.message);
+       // alert('Could not fetch your calendar: ' + err.message);
       });
   }, [idToken]);
 
@@ -210,6 +232,45 @@ function Dashboard() {
 
   return (
     <div className="dashboard-outer">
+      {/* Dashboard Header with User Info and Sign Out - Retractable */}
+      <div 
+        className={`dashboard-header-retractable ${headerCollapsed ? 'collapsed' : ''}`}
+        onClick={() => setHeaderCollapsed(!headerCollapsed)}
+      >
+        <div className="user-welcome">
+          <div className="user-avatar">
+            {user?.picture ? (
+              <img 
+                src={user.picture} 
+                alt="Profile" 
+                className="w-8 h-8 rounded-full border-2 border-pink-300"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-pink-200 flex items-center justify-center text-pink-600 font-semibold">
+                {user?.name?.charAt(0) || user?.email?.charAt(0) || '?'}
+              </div>
+            )}
+          </div>
+          <div className="user-info">
+            <span className="user-greeting">🌸 Welcome back,</span>
+            <span className="user-name">{user?.name || user?.email || 'there'}!</span>
+          </div>
+        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent header collapse when clicking sign out
+            signOut();
+          }}
+          className="sign-out-btn"
+          title="Sign out of your dashboard"
+        >
+          <span className="sign-out-icon">👋</span>
+          <span className="sign-out-text">Sign Out</span>
+        </button>
+        <div className="header-toggle-indicator">
+          {headerCollapsed ? '▲' : '▼'}
+        </div>
+      </div>
       <div className="dashboard-row">
         {/* Todo List Card */}
         <div className="dashboard-card task-card">
@@ -220,12 +281,12 @@ function Dashboard() {
           </article>
           <form onSubmit={addItem} className="flex space-x-2 mb-2">
             <input
-              className="flex-grow p-2 border border-pink-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-300 bg-pink-100 placeholder-pink-500"
+              className="cottagecore-input cottagecore-input-pink flex-grow"
               placeholder="Add a task..."
               value={newItem}
               onChange={(e) => setNewItem(e.target.value)}
             />
-            <button className="bg-pink-500 text-white px-4 py-2 rounded-xl hover:bg-pink-600">
+            <button className="cottagecore-btn cottagecore-btn-medium cottagecore-btn-pink">
               Add
             </button>
           </form>
@@ -240,7 +301,7 @@ function Dashboard() {
                 />
                 {editingId === item.id ? (
                   <input
-                    className={`w-full bg-white border border-pink-200 rounded px-1 py-0.5 text-xs ${item.done ? 'line-through text-pink-400' : 'text-pink-800'}`}
+                    className={`cottagecore-input cottagecore-input-small cottagecore-input-pink w-full ${item.done ? 'line-through text-pink-400' : 'text-pink-800'}`}
                     value={item.text}
                     onChange={(e) => updateItem(item.id, e.target.value)}
                     onBlur={() => setEditingId(null)}
@@ -351,13 +412,13 @@ function PomodoroTimer() {
       <div className="flex space-x-2">
         <button
           onClick={toggle}
-          className={`px-4 py-2 rounded-xl font-semibold transition-all flex items-center justify-center ${isActive ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200'}`}
+          className={`cottagecore-btn cottagecore-btn-medium font-semibold transition-all flex items-center justify-center ${isActive ? 'cottagecore-btn-pink' : 'bg-red-100 text-red-700 hover:bg-red-200'}`}
         >
           {isActive ? 'Pause' : 'Start'}
         </button>
         <button
           onClick={reset}
-          className="px-4 py-2 rounded-xl bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition-colors"
+          className="cottagecore-btn cottagecore-btn-medium cottagecore-btn-gray"
         >
           Reset
         </button>
@@ -465,29 +526,29 @@ function AttendedClassesTracker({ user, idToken }) {
     <div className="w-full flex flex-col items-center gap-4">
       <form onSubmit={addClass} className="flex gap-2 mb-2">
         <input
-          className="border border-green-300 rounded px-2 py-1"
+          className="cottagecore-input cottagecore-input-small cottagecore-input-green"
           placeholder="Class name"
           value={newClass.name}
           onChange={e => setNewClass({ ...newClass, name: e.target.value })}
         />
         <input
-          className="border border-green-300 rounded px-2 py-1 w-16"
+          className="cottagecore-input cottagecore-input-small cottagecore-input-green w-16"
           type="number"
           min="1"
           placeholder="Total"
           value={newClass.total || ''}
           onChange={e => setNewClass({ ...newClass, total: Number(e.target.value) })}
         />
-        <button className="bg-green-400 text-white px-3 py-1 rounded hover:bg-green-500">Add</button>
+        <button className="cottagecore-btn cottagecore-btn-small cottagecore-btn-green">Add</button>
       </form>
       <div className="w-full flex flex-wrap gap-3 justify-center">
         {classes && classes.length > 0 ? classes.map(cls => (
           <div key={cls.id} className="attended-card">
             <span className="font-semibold text-green-800 mb-2 text-center">{cls.name}</span>
             <div className="flex items-center gap-2 mb-2">
-              <button onClick={() => decrement(cls.id)} className="bg-green-200 text-green-700 px-2 py-1 rounded hover:bg-green-300">-</button>
+              <button onClick={() => decrement(cls.id)} className="cottagecore-btn cottagecore-btn-small cottagecore-btn-green">-</button>
               <span className="font-mono text-green-900">{cls.attended} / {cls.total}</span>
-              <button onClick={() => increment(cls.id)} className="bg-green-200 text-green-700 px-2 py-1 rounded hover:bg-green-300">+</button>
+              <button onClick={() => increment(cls.id)} className="cottagecore-btn cottagecore-btn-small cottagecore-btn-green">+</button>
               <button onClick={() => deleteClass(cls.id)} className="ml-2 text-red-400 hover:text-red-700">🗑️</button>
             </div>
           </div>
@@ -624,14 +685,14 @@ function AssignmentsTracker({ user, idToken }) {
       {/* Form Section */}
       <form onSubmit={addAssignment} className="grid grid-cols-2 gap-2 mb-2">
         <input
-          className="border border-purple-300 rounded px-2 py-1"
+          className="cottagecore-input cottagecore-input-small cottagecore-input-purple"
           placeholder="Title"
           value={newAssignment.title}
           onChange={e => setNewAssignment({ ...newAssignment, title: e.target.value })}
           required
         />
         <select
-          className="border border-purple-300 rounded px-2 py-1"
+          className="cottagecore-select cottagecore-input-small cottagecore-input-purple"
           value={newAssignment.type}
           onChange={e => setNewAssignment({ ...newAssignment, type: e.target.value })}
         >
@@ -640,19 +701,19 @@ function AssignmentsTracker({ user, idToken }) {
           <option value="project">Project</option>
         </select>
         <input
-          className="border border-purple-300 rounded px-2 py-1"
+          className="cottagecore-input cottagecore-input-small cottagecore-input-purple"
           placeholder="Class name"
           value={newAssignment.class_name}
           onChange={e => setNewAssignment({ ...newAssignment, class_name: e.target.value })}
         />
         <input
           type="date"
-          className="border border-purple-300 rounded px-2 py-1"
+          className="cottagecore-input cottagecore-input-small cottagecore-input-purple"
           value={newAssignment.due_date}
           onChange={e => setNewAssignment({ ...newAssignment, due_date: e.target.value })}
         />
         <select
-          className="border border-purple-300 rounded px-2 py-1"
+          className="cottagecore-select cottagecore-input-small cottagecore-input-purple"
           value={newAssignment.priority}
           onChange={e => setNewAssignment({ ...newAssignment, priority: e.target.value })}
         >
@@ -661,13 +722,13 @@ function AssignmentsTracker({ user, idToken }) {
           <option value="high">High Priority</option>
         </select>
         <textarea
-          className="border border-purple-300 rounded px-2 py-1 col-span-2"
+          className="cottagecore-textarea cottagecore-input-small cottagecore-input-purple col-span-2"
           placeholder="Description (optional)"
           rows="2"
           value={newAssignment.description}
           onChange={e => setNewAssignment({ ...newAssignment, description: e.target.value })}
         />
-        <button className="bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600 col-span-2">
+        <button className="cottagecore-btn cottagecore-btn-small cottagecore-btn-purple col-span-2">
           Add Assignment
         </button>
       </form>
@@ -853,7 +914,7 @@ function CalendarPicker() {
       
       {!accessToken ? (
         <button
-          className="bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition w-full"
+          className="cottagecore-btn cottagecore-btn-medium cottagecore-btn-blue w-full"
           onClick={() => loginForCalendar()}
         >
           Connect Google Calendar
@@ -862,7 +923,7 @@ function CalendarPicker() {
         <>
           <div className="flex items-center gap-2 mb-2">
             <select
-              className="border border-blue-300 rounded px-2 py-1 calendar-select flex-1"
+              className="cottagecore-select cottagecore-input-small cottagecore-input-blue calendar-select flex-1"
               value={selectedCalendar}
               onChange={e => {
                 setSelectedCalendar(e.target.value);
@@ -876,7 +937,7 @@ function CalendarPicker() {
               ))}
             </select>
             <button
-              className="bg-blue-200 text-blue-700 px-2 py-1 rounded hover:bg-blue-300 transition-colors"
+              className="cottagecore-btn cottagecore-btn-small cottagecore-btn-blue"
               onClick={() => {
                 setAccessToken(null);
                 setCalendarList([]);
