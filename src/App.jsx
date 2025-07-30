@@ -232,7 +232,8 @@ function Dashboard() {
 
   return (
     <div className="dashboard-outer">
-      {/* Dashboard Header with User Info and Sign Out - Retractable */}
+      <div className="dashboard-row">
+          {/* Dashboard Header with User Info and Sign Out - Retractable */}
       <div 
         className={`dashboard-header-retractable ${headerCollapsed ? 'collapsed' : ''}`}
         onClick={() => setHeaderCollapsed(!headerCollapsed)}
@@ -271,7 +272,6 @@ function Dashboard() {
           {headerCollapsed ? '▲' : '▼'}
         </div>
       </div>
-      <div className="dashboard-row">
         {/* Todo List Card */}
         <div className="dashboard-card task-card">
           <h1 className="text-2xl font-bold text-pink-700 mb-2 text-center">🌷 Getting Things Done</h1>
