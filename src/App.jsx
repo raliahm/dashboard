@@ -320,10 +320,11 @@ function Dashboard() {
                 )}
                 <button
                   onClick={() => deleteItem(item.id)}
-                  className="cottagecore-btn cottagecore-btn-small cottagecore-btn-pink-light hover:cottagecore-btn-pink text-xs"
+                  className="text-pink-400 hover:text-pink-600 px-1 text-base"
                   title="Delete"
+                  style={{ lineHeight: 1 }}
                 >
-                  🗑️
+                  ❌
                 </button>
               </li>
             ))}
@@ -343,9 +344,9 @@ function Dashboard() {
           <h2 className="text-xl font-bold text-green-700 mb-2 text-center">📚 Attended Classes Tracker</h2>
           <AttendedClassesTracker user={user} idToken={idToken} />
         </div>
-        {/* Assignments Tracker Card */}
-        <div className="dashboard-card assignments-card">
-          <h2 className="text-xl font-bold text-purple-700 mb-2 text-center">📝 Assignments & Exams</h2>
+        {/* Assignments Tracker Card - Much Bigger for large lists */}
+        <div className="dashboard-card assignments-card" style={{ gridColumn: 'span 3', minHeight: '900px', width: '100%' }}>
+          <h2 className="text-xl font-bold text-purple-700 mb-4 text-center">📝 Assignments & Exams</h2>
           <AssignmentsTracker user={user} idToken={idToken} />
         </div>
       </div>
@@ -677,29 +678,12 @@ function AssignmentsTracker({ user, idToken }) {
     }
   };
 
-  // Sort assignments by due date within each priority bucket
-  const sortAssignmentsByDate = (assignmentList) => {
-    return assignmentList.sort((a, b) => {
-      if (a.due_date && b.due_date) {
-        return new Date(a.due_date) - new Date(b.due_date);
-      }
-      if (a.due_date && !b.due_date) return -1;
-      if (!a.due_date && b.due_date) return 1;
-      return 0;
-    });
-  };
-
-  // Group assignments by priority
-  const highPriorityAssignments = sortAssignmentsByDate(assignments.filter(a => a.priority === 'high'));
-  const mediumPriorityAssignments = sortAssignmentsByDate(assignments.filter(a => a.priority === 'medium'));
-  const lowPriorityAssignments = sortAssignmentsByDate(assignments.filter(a => a.priority === 'low'));
-
   if (loading) return <div>Loading...</div>;
 
-  return (
-    <div className="w-full flex flex-col gap-4 h-full">
+   return (
+    <div className="w-full flex flex-col gap-4 h-full min-h-[800px]">
       {/* Form Section */}
-      <form onSubmit={addAssignment} className="grid grid-cols-2 gap-2 mb-2">
+      <form onSubmit={addAssignment} className="grid grid-cols-2 gap-2 mb-4">
         <input
           className="cottagecore-input cottagecore-input-small cottagecore-input-purple"
           placeholder="Title"
@@ -745,12 +729,12 @@ function AssignmentsTracker({ user, idToken }) {
           onChange={e => setNewAssignment({ ...newAssignment, description: e.target.value })}
         />
         <button className="cottagecore-btn cottagecore-btn-small cottagecore-btn-purple col-span-2">
-          🌸 Add Assignment
+          Add Assignment
         </button>
       </form>
       
       {/* Legend */}
-      <div className="bg-purple-100 border border-purple-200 rounded-lg p-3 mb-2">
+      <div className="bg-purple-100 border border-purple-200 rounded-lg p-3 mb-4">
         <h3 className="text-sm font-semibold text-purple-800 mb-2 text-center">Legend</h3>
         <div className="flex justify-center gap-6 text-xs">
           <div className="flex items-center gap-1">
@@ -768,106 +752,162 @@ function AssignmentsTracker({ user, idToken }) {
         </div>
       </div>
 
-      {/* Priority Buckets */}
-      <div className="assignments-list flex-1 overflow-y-auto">
-        {assignments && assignments.length > 0 ? (
-          <div className="space-y-4">
-            {/* High Priority Bucket */}
-            {highPriorityAssignments.length > 0 && (
-              <div className="priority-bucket high-priority">
-                <div className="priority-header">
-                  <h3 className="priority-title">🔥 High Priority</h3>
-                  <span className="priority-count">{highPriorityAssignments.length}</span>
-                </div>
-                <div className="assignments-container">
-                  {highPriorityAssignments.map(assignment => (
-                    <AssignmentCard 
-                      key={assignment.id} 
-                      assignment={assignment} 
-                      updateAssignmentStatus={updateAssignmentStatus}
-                      deleteAssignment={deleteAssignment}
-                      getStatusColor={getStatusColor}
-                      getPriorityColor={getPriorityColor}
-                      getTypeEmoji={getTypeEmoji}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Medium Priority Bucket */}
-            {mediumPriorityAssignments.length > 0 && (
-              <div className="priority-bucket medium-priority">
-                <div className="priority-header">
-                  <h3 className="priority-title">⚡ Medium Priority</h3>
-                  <span className="priority-count">{mediumPriorityAssignments.length}</span>
-                </div>
-                <div className="assignments-container">
-                  {mediumPriorityAssignments.map(assignment => (
-                    <AssignmentCard 
-                      key={assignment.id} 
-                      assignment={assignment} 
-                      updateAssignmentStatus={updateAssignmentStatus}
-                      deleteAssignment={deleteAssignment}
-                      getStatusColor={getStatusColor}
-                      getPriorityColor={getPriorityColor}
-                      getTypeEmoji={getTypeEmoji}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Low Priority Bucket */}
-            {lowPriorityAssignments.length > 0 && (
-              <div className="priority-bucket low-priority">
-                <div className="priority-header">
-                  <h3 className="priority-title">🌱 Low Priority</h3>
-                  <span className="priority-count">{lowPriorityAssignments.length}</span>
-                </div>
-                <div className="assignments-container">
-                  {lowPriorityAssignments.map(assignment => (
-                    <AssignmentCard 
-                      key={assignment.id} 
-                      assignment={assignment} 
-                      updateAssignmentStatus={updateAssignmentStatus}
-                      deleteAssignment={deleteAssignment}
-                      getStatusColor={getStatusColor}
-                      getPriorityColor={getPriorityColor}
-                      getTypeEmoji={getTypeEmoji}
-                    />
-                  ))}
-                </div>
+      {/* Priority Buckets - Stacked vertically for better space usage */}
+      <div className="priority-buckets-stacked flex-1 flex flex-col gap-4 min-h-[600px]">
+        {/* High Priority Bucket */}
+        <div className="priority-bucket high-priority">
+          <div className="bucket-header bg-gradient-to-r from-red-100 to-red-200 border-2 border-red-300 rounded-t-lg p-3 text-center">
+            <h3 className="text-lg font-bold text-red-800 flex items-center justify-center gap-2">
+              🔥 High Priority
+            </h3>
+            <div className="text-sm text-red-600 mt-1 font-medium">
+              {assignments.filter(a => a.priority === 'high').length} items
+            </div>
+          </div>
+          <div className="bucket-content bg-red-50 border-2 border-t-0 border-red-300 rounded-b-lg p-3 min-h-[200px] max-h-[300px] overflow-y-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {assignments
+                .filter(assignment => assignment.priority === 'high')
+                .sort((a, b) => {
+                  if (a.due_date && b.due_date) {
+                    return new Date(a.due_date) - new Date(b.due_date);
+                  }
+                  return 0;
+                })
+                .map(assignment => (
+                  <AssignmentCard 
+                    key={assignment.id}
+                    assignment={assignment}
+                    updateAssignmentStatus={updateAssignmentStatus}
+                    deleteAssignment={deleteAssignment}
+                    getStatusColor={getStatusColor}
+                    getPriorityColor={getPriorityColor}
+                    getTypeEmoji={getTypeEmoji}
+                  />
+                ))}
+            </div>
+            {assignments.filter(a => a.priority === 'high').length === 0 && (
+              <div className="text-center text-red-400 py-8">
+                <div className="text-3xl mb-2">🔥</div>
+                <div className="text-base font-medium">No high priority items</div>
+                <div className="text-sm text-red-300 mt-1">Urgent tasks will appear here</div>
               </div>
             )}
           </div>
-        ) : (
-          <div className="text-center py-8">
-            <div className="text-3xl mb-2">📝</div>
-            <div className="text-gray-500 font-medium">No assignments yet</div>
-            <div className="text-gray-400 text-sm">Add your first assignment above! 🌸</div>
+        </div>
+
+        {/* Medium Priority Bucket */}
+        <div className="priority-bucket medium-priority">
+          <div className="bucket-header bg-gradient-to-r from-yellow-100 to-yellow-200 border-2 border-yellow-300 rounded-t-lg p-3 text-center">
+            <h3 className="text-lg font-bold text-yellow-800 flex items-center justify-center gap-2">
+              ⚡ Medium Priority
+            </h3>
+            <div className="text-sm text-yellow-600 mt-1 font-medium">
+              {assignments.filter(a => a.priority === 'medium').length} items
+            </div>
           </div>
-        )}
+          <div className="bucket-content bg-yellow-50 border-2 border-t-0 border-yellow-300 rounded-b-lg p-3 min-h-[200px] max-h-[300px] overflow-y-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {assignments
+                .filter(assignment => assignment.priority === 'medium')
+                .sort((a, b) => {
+                  if (a.due_date && b.due_date) {
+                    return new Date(a.due_date) - new Date(b.due_date);
+                  }
+                  return 0;
+                })
+                .map(assignment => (
+                  <AssignmentCard 
+                    key={assignment.id}
+                    assignment={assignment}
+                    updateAssignmentStatus={updateAssignmentStatus}
+                    deleteAssignment={deleteAssignment}
+                    getStatusColor={getStatusColor}
+                    getPriorityColor={getPriorityColor}
+                    getTypeEmoji={getTypeEmoji}
+                  />
+                ))}
+            </div>
+            {assignments.filter(a => a.priority === 'medium').length === 0 && (
+              <div className="text-center text-yellow-400 py-8">
+                <div className="text-3xl mb-2">⚡</div>
+                <div className="text-base font-medium">No medium priority items</div>
+                <div className="text-sm text-yellow-300 mt-1">Regular tasks will appear here</div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Low Priority Bucket */}
+        <div className="priority-bucket low-priority">
+          <div className="bucket-header bg-gradient-to-r from-gray-100 to-gray-200 border-2 border-gray-300 rounded-t-lg p-3 text-center">
+            <h3 className="text-lg font-bold text-gray-800 flex items-center justify-center gap-2">
+              📋 Low Priority
+            </h3>
+            <div className="text-sm text-gray-600 mt-1 font-medium">
+              {assignments.filter(a => a.priority === 'low').length} items
+            </div>
+          </div>
+          <div className="bucket-content bg-gray-50 border-2 border-t-0 border-gray-300 rounded-b-lg p-3 min-h-[200px] max-h-[300px] overflow-y-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {assignments
+                .filter(assignment => assignment.priority === 'low')
+                .sort((a, b) => {
+                  if (a.due_date && b.due_date) {
+                    return new Date(a.due_date) - new Date(b.due_date);
+                  }
+                  return 0;
+                })
+                .map(assignment => (
+                  <AssignmentCard 
+                    key={assignment.id}
+                    assignment={assignment}
+                    updateAssignmentStatus={updateAssignmentStatus}
+                    deleteAssignment={deleteAssignment}
+                    getStatusColor={getStatusColor}
+                    getPriorityColor={getPriorityColor}
+                    getTypeEmoji={getTypeEmoji}
+                  />
+                ))}
+            </div>
+            {assignments.filter(a => a.priority === 'low').length === 0 && (
+              <div className="text-center text-gray-400 py-8">
+                <div className="text-3xl mb-2">📋</div>
+                <div className="text-base font-medium">No low priority items</div>
+                <div className="text-sm text-gray-300 mt-1">Future tasks will appear here</div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
+
+      {/* Empty state when no assignments at all */}
+      {assignments.length === 0 && (
+        <div className="text-center py-16">
+          <div className="text-8xl mb-6">📝</div>
+          <div className="text-gray-500 font-medium text-2xl">No assignments yet</div>
+          <div className="text-gray-400 text-lg mt-2">Add your first assignment above!</div>
+        </div>
+      )}
     </div>
   );
 }
 
-// Assignment Card Component
+// Assignment Card Component for Priority Buckets
 function AssignmentCard({ assignment, updateAssignmentStatus, deleteAssignment, getStatusColor, getPriorityColor, getTypeEmoji }) {
+  const isOverdue = assignment.due_date && new Date(assignment.due_date) < new Date() && assignment.status !== 'completed';
+  
   return (
-    <div className="assignment-card bg-white border border-purple-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
+    <div className={`assignment-card bg-white border rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow mb-3 ${
+      isOverdue ? 'border-red-400 bg-red-50' : 'border-purple-200'
+    }`}>
       {/* Assignment Header */}
       <div className="flex items-center justify-between gap-2 text-sm mb-2">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <span className="text-base flex-shrink-0">{getTypeEmoji(assignment.type)}</span>
+          <span className="text-lg flex-shrink-0">{getTypeEmoji(assignment.type)}</span>
           
-          <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${getStatusColor(assignment.status)} border flex-shrink-0`}>
+          <span className={`text-xs px-2 py-1 rounded-full font-semibold ${getStatusColor(assignment.status)} border flex-shrink-0`}>
             {assignment.status === 'in_progress' ? 'IN PROGRESS' : assignment.status.toUpperCase()}
-          </span>
-          
-          <span className="font-semibold text-purple-900 truncate">
-            {assignment.title}
           </span>
         </div>
         
@@ -880,22 +920,29 @@ function AssignmentCard({ assignment, updateAssignmentStatus, deleteAssignment, 
         </button>
       </div>
 
+      {/* Assignment Title */}
+      <div className="font-semibold text-purple-900 mb-2 text-base">
+        {assignment.title}
+        {isOverdue && <span className="text-red-600 ml-2 text-xs font-normal">(OVERDUE)</span>}
+      </div>
+
       {/* Assignment Details */}
-      <div className="flex items-center gap-4 text-xs text-gray-600 mb-3">
+      <div className="flex flex-col gap-1 text-xs text-gray-600 mb-3">
         {assignment.class_name && (
-          <span className="flex items-center gap-1">
-            📚 {assignment.class_name}
-          </span>
+          <div className="flex items-center gap-1">
+            📚 <span className="font-medium">{assignment.class_name}</span>
+          </div>
         )}
         
         {assignment.due_date && (
-          <span className="flex items-center gap-1">
-            📅 {new Date(assignment.due_date).toLocaleDateString('en-US', {
+          <div className={`flex items-center gap-1 ${isOverdue ? 'text-red-600 font-medium' : ''}`}>
+            📅 <span>{new Date(assignment.due_date).toLocaleDateString('en-US', {
+              weekday: 'short',
               month: 'short',
               day: 'numeric',
               year: 'numeric'
-            })}
-          </span>
+            })}</span>
+          </div>
         )}
       </div>
 
@@ -907,7 +954,7 @@ function AssignmentCard({ assignment, updateAssignmentStatus, deleteAssignment, 
       )}
 
       {/* Action Buttons */}
-      <div className="flex gap-2">
+      <div className="flex gap-1">
         <button
           onClick={() => updateAssignmentStatus(assignment.id, 'pending')}
           className={`cottagecore-btn cottagecore-btn-small ${

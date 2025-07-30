@@ -1257,3 +1257,123 @@ body {
   display: block !important;
   place-items: unset !important;
 }
+
+/* Priority buckets for assignments tracker - Stacked vertically */
+.priority-buckets-stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  min-height: 600px;
+}
+
+.priority-bucket {
+  display: flex;
+  flex-direction: column;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 6px 20px -2px rgba(0, 0, 0, 0.1), 0 4px 12px -1px rgba(0, 0, 0, 0.06);
+  flex-shrink: 0;
+}
+
+.bucket-header {
+  flex-shrink: 0;
+  position: relative;
+}
+
+.bucket-content {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.bucket-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.bucket-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bucket-content::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 4px;
+}
+
+.bucket-content::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.7);
+}
+
+/* Assignment card styling - Compact for grid layout */
+.assignment-card {
+  position: relative;
+  transition: all 0.3s ease;
+  margin-bottom: 0; /* Remove bottom margin since we're using grid gap */
+}
+
+.assignment-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Grid layout for assignment cards within buckets */
+.bucket-content .grid {
+  gap: 0.75rem;
+}
+
+/* Responsive grid adjustments */
+@media (max-width: 768px) {
+  .priority-buckets-stacked {
+    gap: 0.75rem;
+  }
+  
+  .bucket-content {
+    max-height: 200px;
+  }
+  
+  .bucket-content .grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .dashboard-card.assignments-card {
+    grid-column: span 1 !important;
+    min-height: 600px !important;
+  }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+  .bucket-content .grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 1200px) and (min-width: 1025px) {
+  .bucket-content .grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* Large screen adjustments for better use of space */
+@media (min-width: 1400px) {
+  .priority-buckets-stacked {
+    gap: 1.5rem;
+  }
+  
+  .bucket-content {
+    max-height: 400px;
+  }
+  
+  .bucket-content .grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+  }
+  
+  .dashboard-card.assignments-card {
+    min-height: 1000px;
+  }
+}
+
+/* Remove old horizontal grid styles */
+.priority-buckets {
+  display: none;
+}
