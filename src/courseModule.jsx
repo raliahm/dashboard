@@ -66,7 +66,7 @@ export function CourseModule({ module, onProgressUpdate, initialProgress }) {
       hasNotes: notes.length > 0,
       notes: notes // Pass the actual notes content
     });
-  }, [readingProgress, homeworkStatus, notes, module.id, onProgressUpdate]);
+  }, [readingProgress, homeworkStatus, notes, module.id]); // Removed onProgressUpdate from dependencies
   const getStatusColor = () => {
     switch (module.status) {
       case 'completed': return 'bg-green-50 border-green-400 text-green-800';

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { CourseModule } from './courseModule.jsx';
 import { ScheduleParser } from './scheduleParser.js';
 
@@ -238,7 +238,7 @@ export function CourseSchedule() {
     }
   };
 
-  const handleProgressUpdate = async (moduleId, progress) => {
+  const handleProgressUpdate = useCallback(async (moduleId, progress) => {
     setProgressStats(prev => ({
       ...prev,
       [moduleId]: progress
@@ -291,7 +291,7 @@ export function CourseSchedule() {
         hasIdToken: !!idToken
       });
     }
-  };
+  }, [activeCourseId, user, idToken]); // Dependencies for useCallback
 
   const filteredModules = modules.filter(module => {
     const matchesStatus = filterStatus === 'all' || module.status === filterStatus;
