@@ -297,18 +297,28 @@ export function CourseSchedule() {
   });
 
   const getOverallStats = () => {
-    const totalModules = modules.length;
+    // Only count modules that have actual content
+    const contentModules = modules.filter(module => {
+      const hasReadings = module.readings && module.readings.trim();
+      const hasHomework = module.homework && module.homework.trim();
+      return hasReadings || hasHomework;
+    });
+    
+    const totalModules = contentModules.length;
     
     // Calculate actual completed modules based on user progress, not just dates
     let actuallyCompletedModules = 0;
     let totalCompletedReadings = 0;
     let totalReadings = 0;
     
-    modules.forEach(module => {
+    contentModules.forEach(module => {
       const moduleProgress = progressStats[module.id];
       let moduleIsComplete = false;
       
-      if (module.readings) {
+      const hasReadings = module.readings && module.readings.trim();
+      const hasHomework = module.homework && module.homework.trim();
+      
+      if (hasReadings) {
         const moduleReadings = module.readings.split(',').map(r => r.trim()).filter(r => r);
         totalReadings += moduleReadings.length;
         
@@ -323,21 +333,18 @@ export function CourseSchedule() {
           }
           totalCompletedReadings += completedCount;
           
-          // Module is complete if all readings are done AND homework is complete
+          // Module is complete if all readings are done AND homework is complete (if it exists)
           const allReadingsComplete = completedCount >= moduleReadings.length;
-          const homeworkComplete = moduleProgress.homeworkStatus === 'completed';
+          const homeworkComplete = hasHomework ? (moduleProgress.homeworkStatus === 'completed') : true;
           
-          if (allReadingsComplete && (module.homework ? homeworkComplete : true)) {
+          if (allReadingsComplete && homeworkComplete) {
             moduleIsComplete = true;
           }
         }
-      } else {
+      } else if (hasHomework) {
         // If no readings, just check homework completion
-        if (moduleProgress && module.homework) {
-          moduleIsComplete = moduleProgress.homeworkStatus === 'completed';
-        } else if (!module.homework) {
-          // If no readings and no homework, consider complete if it has notes or is past due
-          moduleIsComplete = (moduleProgress && moduleProgress.hasNotes) || module.status === 'completed';
+        if (moduleProgress && moduleProgress.homeworkStatus === 'completed') {
+          moduleIsComplete = true;
         }
       }
       
@@ -349,7 +356,7 @@ export function CourseSchedule() {
     return {
       moduleProgress: `${actuallyCompletedModules}/${totalModules}`,
       readingProgress: `${totalCompletedReadings}/${totalReadings}`,
-      overallCompletion: Math.round((actuallyCompletedModules / totalModules) * 100)
+      overallCompletion: totalModules > 0 ? Math.round((actuallyCompletedModules / totalModules) * 100) : 0
     };
   };
 
@@ -570,187 +577,171 @@ Thu 8/21	Basic Concepts	Ch. 3	Assignment 1 due	Week 1`}
               </button>
             )}
               {/* Course Progress Garden */}
-      {/* Heart-Based Health System Garden */}
+      {/* Heart-Based Flower Garden */}
       {modules.length > 0 && (
-        <div className="progress-garden mt-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-4 border-2 border-green-200">
-          <h4 className="font-semibold text-green-700 mb-3 text-center flex items-center justify-center gap-2">
+        <div className="progress-garden mt-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border-2 border-green-200">
+          <h4 className="font-semibold text-green-700 mb-4 text-center flex items-center justify-center gap-2">
             💚 Your Heart Garden
           </h4>
           
-          {/* Heart Health System */}
-          <div className="heart-health-system mb-4">
-            {(() => {
-              // Calculate total possible hearts (modules + all readings)
-              let totalPossibleHearts = 0;
-              let earnedHearts = 0;
+          {(() => {
+            // Calculate total possible hearts (modules + all readings)
+            let totalPossibleHearts = 0;
+            let earnedHearts = 0;
+            
+            modules.forEach(module => {
+              // Only count modules that have actual content (readings or homework)
+              const hasReadings = module.readings && module.readings.trim();
+              const hasHomework = module.homework && module.homework.trim();
               
-              modules.forEach(module => {
-                // Count module completion as 1 heart
+              // Skip modules with no content
+              if (!hasReadings && !hasHomework) {
+                return;
+              }
+              
+              // Count module completion as 1 heart (only if it has homework)
+              if (hasHomework) {
                 totalPossibleHearts += 1;
+              }
+              
+              // Count each reading as 1 heart
+              if (hasReadings) {
+                const moduleReadings = module.readings.split(',').map(r => r.trim()).filter(r => r);
+                totalPossibleHearts += moduleReadings.length;
                 
-                // Count each reading as 1 heart
-                if (module.readings) {
-                  const moduleReadings = module.readings.split(',').map(r => r.trim()).filter(r => r);
-                  totalPossibleHearts += moduleReadings.length;
-                  
-                  // Count earned hearts from this module
-                  const progress = progressStats[module.id];
-                  if (progress) {
-                    // Hearts from completed readings
-                    if (progress.readingProgress && Array.isArray(progress.readingProgress)) {
-                      earnedHearts += progress.readingProgress.length;
-                    }
-                    // Heart from module completion (homework done)
-                    if (progress.homeworkStatus === 'completed') {
-                      earnedHearts += 1;
-                    }
+                // Count earned hearts from this module
+                const progress = progressStats[module.id];
+                if (progress) {
+                  // Hearts from completed readings
+                  if (progress.readingProgress && Array.isArray(progress.readingProgress)) {
+                    earnedHearts += progress.readingProgress.length;
+                  }
+                  // Heart from module completion (homework done) - only if module has homework
+                  if (hasHomework && progress.homeworkStatus === 'completed') {
+                    earnedHearts += 1;
                   }
                 }
-              });
-              
-              // Generate hearts display
-              const heartsPerRow = 10;
-              const heartRows = Math.ceil(totalPossibleHearts / heartsPerRow);
-              const flowers = Math.floor(earnedHearts / 3); // 1 flower per 3 hearts
-              
-              return (
-                <div className="hearts-and-flowers">
-                  {/* Hearts Display */}
-                  <div className="hearts-grid mb-4">
-                    {Array.from({ length: heartRows }, (_, rowIndex) => (
-                      <div key={rowIndex} className="heart-row flex justify-center gap-1 mb-2">
-                        {Array.from({ length: Math.min(heartsPerRow, totalPossibleHearts - (rowIndex * heartsPerRow)) }, (_, heartIndex) => {
-                          const heartNumber = (rowIndex * heartsPerRow) + heartIndex + 1;
-                          const isEarned = heartNumber <= earnedHearts;
-                          return (
-                            <span
-                              key={heartIndex}
-                              className={`heart text-lg transition-all duration-300 ${
-                                isEarned 
-                                  ? 'text-red-500 animate-pulse scale-110' 
-                                  : 'text-gray-300 opacity-60'
-                              }`}
-                              title={`Heart ${heartNumber}/${totalPossibleHearts} ${isEarned ? '- Earned!' : '- Not yet earned'}`}
-                            >
-                              {isEarned ? '❤️' : '🤍'}
-                            </span>
-                          );
-                        })}
+              }
+            });
+            
+            const flowers = Math.floor(earnedHearts / 3); // 1 flower per 3 hearts
+            
+            return (
+              <div className="single-garden-bed">
+                {/* Progress Stats */}
+                <div className="progress-stats text-center mb-4">
+                  <p className="text-green-700 font-semibold text-lg">
+                    💚 {earnedHearts}/{totalPossibleHearts} Hearts Earned
+                  </p>
+                  <p className="text-green-600 text-sm">
+                    🌸 {flowers} Flowers Bloomed (1 flower per 3 hearts)
+                  </p>
+                </div>
+                
+                {/* Single Large Flower Bed with Hearts and Flowers */}
+                <div className="main-garden-bed bg-gradient-to-b from-amber-50 to-green-100 rounded-2xl p-6 border-3 border-amber-200 relative overflow-hidden min-h-[200px]">
+                  {/* Garden Ground */}
+                  <div className="garden-soil absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-amber-800 to-amber-600 rounded-b-2xl"></div>
+                  
+                  {/* Floating Hearts in the Garden */}
+                  <div className="floating-hearts absolute inset-0 p-4">
+                    {Array.from({ length: earnedHearts }, (_, index) => (
+                      <div
+                        key={index}
+                        className="floating-heart absolute"
+                        style={{
+                          left: `${15 + (index * 8) % 70}%`,
+                          top: `${20 + (Math.sin(index) * 30 + 30)}%`,
+                          transform: `rotate(${(index * 15) % 60 - 30}deg)`,
+                          animationDelay: `${index * 0.2}s`,
+                          fontSize: `${1.2 + (index % 3) * 0.3}rem`
+                        }}
+                        title={`Heart ${index + 1} - Earned!`}
+                      >
+                        <span className="text-red-500 animate-pulse hover:scale-125 transition-transform cursor-pointer">
+                          ❤️
+                        </span>
                       </div>
                     ))}
                   </div>
                   
-                  {/* Progress Stats */}
-                  <div className="progress-stats text-center mb-4">
-                    <p className="text-green-700 font-semibold">
-                      💚 {earnedHearts}/{totalPossibleHearts} Hearts Earned
-                    </p>
-                    <p className="text-green-600 text-sm">
-                      🌸 {flowers} Flowers Bloomed (1 flower per 3 hearts)
-                    </p>
+                  {/* Flowers in the Garden */}
+                  <div className="garden-flowers absolute inset-0 p-4">
+                    {Array.from({ length: flowers }, (_, index) => {
+                      const flowerTypes = [
+                        'cottagecore-flower-pink',
+                        'cottagecore-flower-orange',  
+                        'cottagecore-flower-purple',
+                        'cottagecore-flower-yellow',
+                        'cottagecore-berry',
+                      ];
+                      
+                      const flowerType = flowerTypes[index % flowerTypes.length];
+                      
+                      return (
+                        <div
+                          key={index}
+                          className="garden-flower absolute"
+                          style={{
+                            left: `${25 + (index * 15) % 50}%`,
+                            bottom: `${30 + (index % 3) * 20}%`,
+                            transform: `scale(${1.2 + (index % 2) * 0.3})`,
+                            animationDelay: `${index * 0.5}s`
+                          }}
+                          title={`${flowerType.replace('cottagecore-', '').replace('-', ' ')} - Bloomed from ${(index + 1) * 3} hearts!`}
+                        >
+                          <div className="garden-ground">
+                            <div className={`cottagecore-plant ${flowerType} animate-bounce`} />
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                   
-                  {/* Flower Garden */}
-                  <div className="flower-garden">
-                    <div className="flowers-display flex justify-center gap-3 flex-wrap">
-                      {Array.from({ length: Math.max(6, flowers + 3) }, (_, index) => {
-                        const isBloomedFlower = index < flowers;
-                        const isNextFlower = index === flowers && earnedHearts % 3 > 0;
-                        const nextFlowerProgress = earnedHearts % 3;
-                        
-                        let plantComponent = null;
-                        let flowerTitle = 'Seed waiting to grow';
-                        
-                        if (isBloomedFlower) {
-                          // Full flowers with variety from your cottagecore images
-                          const flowerTypes = [
-                            'cottagecore-flower-pink',    // Pink flower like in your first image
-                            'cottagecore-flower-orange',  // Orange flower
-                            'cottagecore-flower-purple',  // Purple flower  
-                            'cottagecore-flower-yellow',  // Yellow flower
-                            'cottagecore-berry',         // Cherry/strawberry
-                            'cottagecore-butterfly',     // Butterfly as special reward
-                          ];
-                          
-                          const flowerType = flowerTypes[index % flowerTypes.length];
-                          
-                          // Add special elements occasionally
-                          if (index > 0 && index % 4 === 0) {
-                            plantComponent = (
-                              <div className="garden-ground">
-                                <div className={`cottagecore-plant ${flowerType}`} />
-                                {index % 8 === 0 && <div className="cottagecore-ladybug" />}
-                              </div>
-                            );
-                          } else {
-                            plantComponent = (
-                              <div className="garden-ground">
-                                <div className={`cottagecore-plant ${flowerType}`} />
-                              </div>
-                            );
-                          }
-                          
-                          flowerTitle = `${flowerType.replace('cottagecore-', '').replace('-', ' ')} - Fully bloomed!`;
-                          
-                        } else if (isNextFlower) {
-                          // Growth stages based on hearts earned toward next flower
-                          if (nextFlowerProgress === 1) {
-                            plantComponent = (
-                              <div className="garden-ground">
-                                <div className="cottagecore-plant plant-sprout" />
-                              </div>
-                            );
-                            flowerTitle = 'Sprouting... (1/3 hearts)';
-                          } else if (nextFlowerProgress === 2) {
-                            plantComponent = (
-                              <div className="garden-ground">
-                                <div className="cottagecore-plant plant-sprout" />
-                              </div>
-                            );
-                            flowerTitle = 'Growing strong... (2/3 hearts)';
-                          }
-                        } else {
-                          // Seed stage
-                          plantComponent = (
-                            <div className="garden-ground">
-                              <div className="cottagecore-plant plant-seed" />
-                            </div>
-                          );
-                        }
-                        
-                        return (
-                          <div
-                            key={index}
-                            className={`flower-plot transition-all duration-500 transform hover:scale-110 ${
-                              isBloomedFlower ? 'animate-bounce' : 
-                              isNextFlower ? 'animate-pulse' : 
-                              'opacity-60'
-                            }`}
-                            title={flowerTitle}
-                          >
-                            {plantComponent}
-                          </div>
-                        );
-                      })}
+                  {/* Special garden creatures */}
+                  {flowers >= 3 && (
+                    <div className="garden-creatures absolute inset-0">
+                      <div 
+                        className="cottagecore-butterfly absolute"
+                        style={{ 
+                          right: '20%', 
+                          top: '25%',
+                          animationDelay: '1s'
+                        }}
+                        title="Beautiful garden attracted a butterfly!"
+                      />
+                      {flowers >= 6 && (
+                        <div 
+                          className="cottagecore-ladybug absolute"
+                          style={{ 
+                            left: '25%', 
+                            bottom: '40%',
+                            animationDelay: '2s'
+                          }}
+                          title="Lucky ladybug found your garden!"
+                        />
+                      )}
                     </div>
-                    
-                    {/* Special garden decorations when you have many flowers */}
-                    {flowers >= 5 && (
-                      <div className="garden-decorations flex justify-center mt-2 gap-4">
-                        <div className="cottagecore-butterfly" title="Beautiful garden attracted a butterfly!" />
-                        {flowers >= 10 && (
-                          <div className="cottagecore-ladybug" title="Lucky ladybug found your garden!" />
-                        )}
+                  )}
+                  
+                  {/* Growing spots for next flowers */}
+                  {earnedHearts % 3 > 0 && (
+                    <div className="next-flower absolute" style={{ right: '30%', bottom: '35%' }}>
+                      <div className="garden-ground">
+                        <div className={`cottagecore-plant ${earnedHearts % 3 === 1 ? 'plant-seed' : 'plant-sprout'} animate-pulse`} />
                       </div>
-                    )}
-                  </div>
+                      <div className="text-xs text-green-600 text-center mt-1 font-medium">
+                        {earnedHearts % 3}/3 hearts
+                      </div>
+                    </div>
+                  )}
                 </div>
-              );
-            })()}
-          </div>
+              </div>
+            );
+          })()}
           
-          <p className="text-center text-green-600 text-xs mt-2 font-medium">
-            Complete readings and assignments to earn hearts and grow flowers! 🌿
+          <p className="text-center text-green-600 text-sm mt-4 font-medium">
+            Complete readings and assignments to add hearts and grow flowers in your garden! 🌿
           </p>
         </div>
       )}

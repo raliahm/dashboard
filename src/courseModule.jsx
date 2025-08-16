@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { PlantGrowth } from './PlantGrowth.jsx';
 
 export function CourseModule({ module, onProgressUpdate, initialProgress }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -143,15 +142,6 @@ export function CourseModule({ module, onProgressUpdate, initialProgress }) {
           </div>
           
           <div className="flex items-center gap-4">
-            <PlantGrowth 
-              growth={module.plantGrowth} 
-              moduleStatus={module.status}
-              progress={{
-                reading: readingProgress.length,
-                homework: homeworkStatus,
-                totalReadings: parseReadings(module.readings).length
-              }}
-            />
             <span className="text-2xl transform transition-transform duration-300">
               {isExpanded ? '🔽' : '▶️'}
             </span>
