@@ -1,32 +1,73 @@
 import { useState, useEffect } from 'react';
 import { PlantGrowth } from './PlantGrowth.jsx';
 
-export function CourseModule({ module, onProgressUpdate }) {
+export function CourseModule({ module, onProgressUpdate, initialProgress }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [readingProgress, setReadingProgress] = useState(() => {
+    // Use initial progress from database first, then fallback to localStorage
+    if (initialProgress?.readingProgress) {
+      return Array.isArray(initialProgress.readingProgress) ? initialProgress.readingProgress : [];
+    }
     const saved = localStorage.getItem(`reading-${module.id}`);
     return saved ? JSON.parse(saved) : [];
   });
   const [homeworkStatus, setHomeworkStatus] = useState(() => {
+    // Use initial progress from database first, then fallback to localStorage
+    if (initialProgress?.homeworkStatus) {
+      return initialProgress.homeworkStatus;
+    }
     const saved = localStorage.getItem(`homework-${module.id}`);
     return saved || 'not-started';
   });
   const [notes, setNotes] = useState(() => {
+    // Use initial progress from database first, then fallback to localStorage
+    if (initialProgress?.notes) {
+      return initialProgress.notes;
+    }
     const saved = localStorage.getItem(`notes-${module.id}`);
     return saved || '';
   });
 
-
+  // Update state when initialProgress changes (from database load)
+  useEffect(() => {
+    if (initialProgress) {
+      if (initialProgress.readingProgress && Array.isArray(initialProgress.readingProgress)) {
+        setReadingProgress(initialProgress.readingProgress);
+      }
+      if (initialProgress.homeworkStatus) {
+        setHomeworkStatus(initialProgress.homeworkStatus);
+      }
+      if (initialProgress.notes) {
+        setNotes(initialProgress.notes);
+      }
+    }
+  }, [initialProgress]);
 
   useEffect(() => {
-  // Update parent component about progress
-  onProgressUpdate?.(module.id, {
-    readingProgress: readingProgress, // Pass the actual array, not just length
-    homeworkStatus,
-    hasNotes: notes.length > 0,
-    notes: notes // Pass the actual notes content
-  });
-}, [readingProgress, homeworkStatus, notes, module.id, onProgressUpdate]);
+    // Save to localStorage
+    localStorage.setItem(`reading-${module.id}`, JSON.stringify(readingProgress));
+  }, [readingProgress, module.id]);
+
+  useEffect(() => {
+    // Save to localStorage
+    localStorage.setItem(`homework-${module.id}`, homeworkStatus);
+  }, [homeworkStatus, module.id]);
+
+  useEffect(() => {
+    // Save to localStorage
+    localStorage.setItem(`notes-${module.id}`, notes);
+  }, [notes, module.id]);
+
+  useEffect(() => {
+    // Update parent component about progress
+    console.log('Updating progress for module:', module.id, 'with notes length:', notes.length); // Debug log
+    onProgressUpdate?.(module.id, {
+      readingProgress: readingProgress, // Pass the actual array, not just length
+      homeworkStatus,
+      hasNotes: notes.length > 0,
+      notes: notes // Pass the actual notes content
+    });
+  }, [readingProgress, homeworkStatus, notes, module.id, onProgressUpdate]);
   const getStatusColor = () => {
     switch (module.status) {
       case 'completed': return 'bg-green-50 border-green-400 text-green-800';

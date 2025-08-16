@@ -105,9 +105,10 @@ export function CourseSchedule() {
           progressData.forEach(progress => {
             const readingProgressArray = JSON.parse(progress.reading_progress || '[]');
             progressMap[progress.module_id] = {
-              readingProgress: readingProgressArray.length, // Count of completed readings
+              readingProgress: readingProgressArray, // Keep the actual array, not just count
               homeworkStatus: progress.homework_status,
-              hasNotes: progress.notes?.length > 0
+              hasNotes: progress.notes?.length > 0,
+              notes: progress.notes || ''
             };
           });
           
@@ -246,7 +247,9 @@ export function CourseSchedule() {
     // Save progress to database if user is logged in
     if (activeCourseId && user && idToken) {
       try {
-        await fetch('/api/schedule-progress', {
+        console.log('Saving progress for module:', moduleId, 'with notes:', progress.notes); // Debug log
+        
+        const response = await fetch('/api/schedule-progress', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -255,13 +258,24 @@ export function CourseSchedule() {
           body: JSON.stringify({
             course_id: activeCourseId,
             module_id: moduleId,
-            reading_progress: progress.readingProgress || [],
+            reading_progress: Array.isArray(progress.readingProgress) ? progress.readingProgress : [],
             homework_status: progress.homeworkStatus || 'not-started',
             notes: progress.notes || '',
           }),
         });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('API Error:', errorData);
+          throw new Error(`Failed to save progress: ${errorData.error || response.statusText}`);
+        }
+        
+        const savedData = await response.json();
+        console.log('Progress saved successfully:', savedData); // Debug log
+        
       } catch (error) {
         console.error('Error saving progress:', error);
+        alert('Failed to save progress to database. Your changes are saved locally.');
       }
     }
   };
@@ -537,6 +551,7 @@ Thu 8/21	Basic Concepts	Ch. 3	Assignment 1 due	Week 1`}
               <CourseModule
                 module={module}
                 onProgressUpdate={handleProgressUpdate}
+                initialProgress={progressStats[module.id]}
               />
             </div>
           ))
