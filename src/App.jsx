@@ -14,17 +14,30 @@ function App() {
 }
 
 function Dashboard() {
-  // Try to restore user and idToken from localStorage
-  const [user, setUser] = useState(() => {
-    const stored = localStorage.getItem('user');
-    return stored ? JSON.parse(stored) : null;
+  // Check if user previously chose to stay signed in
+  const [rememberMe, setRememberMe] = useState(() => {
+    return localStorage.getItem('rememberMe') === 'true';
   });
-  const [idToken, setIdToken] = useState(() => localStorage.getItem('idToken'));
+  
+  // Initialize user state - only restore from localStorage if user chose to remember
+  const [user, setUser] = useState(() => {
+    if (rememberMe) {
+      const stored = localStorage.getItem('user');
+      return stored ? JSON.parse(stored) : null;
+    }
+    return null;
+  });
+  const [idToken, setIdToken] = useState(() => {
+    if (rememberMe) {
+      return localStorage.getItem('idToken');
+    }
+    return null;
+  });
   const [accessToken, setAccessToken] = useState(null);
   const [newItem, setNewItem] = useState("");
   const [items, setItems] = useState([]);
   const [editingId, setEditingId] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [calendarEvents, setCalendarEvents] = useState([]);
   const [calendarId, setCalendarId] = useState('primary');
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
@@ -39,11 +52,13 @@ function Dashboard() {
     setItems([]);
     setCalendarEvents([]);
     setCalendarId('primary');
+    setRememberMe(false);
     
     // Clear localStorage
     localStorage.removeItem('user');
     localStorage.removeItem('idToken');
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('rememberMe');
     // Reset any other component states
     setLoading(false);
     setEditingId(null);
@@ -73,21 +88,30 @@ function Dashboard() {
       });
   }, [idToken]);
 
-  // Keep user and idToken in sync with localStorage
+  // Keep user and idToken in sync with localStorage only if rememberMe is enabled
   useEffect(() => {
-    if (user) {
-      localStorage.setItem('user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('user');
+    if (rememberMe) {
+      if (user) {
+        localStorage.setItem('user', JSON.stringify(user));
+      } else {
+        localStorage.removeItem('user');
+      }
     }
-  }, [user]);
+  }, [user, rememberMe]);
+  
   useEffect(() => {
-    if (idToken) {
-      localStorage.setItem('idToken', idToken);
-    } else {
-      localStorage.removeItem('idToken');
+    if (rememberMe) {
+      if (idToken) {
+        localStorage.setItem('idToken', idToken);
+      } else {
+        localStorage.removeItem('idToken');
+      }
     }
-  }, [idToken]);
+  }, [idToken, rememberMe]);
+
+  useEffect(() => {
+    localStorage.setItem('rememberMe', rememberMe.toString());
+  }, [rememberMe]);
 
   useEffect(() => {
     if (!user || !idToken) return;
@@ -198,16 +222,32 @@ function Dashboard() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <h2 className="mb-4 text-lg font-semibold">Sign in to continue</h2>
+        
+        <div className="mb-4">
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="rounded"
+            />
+            <span className="text-sm">Remember me</span>
+          </label>
+        </div>
+        
         <GoogleLogin
           onSuccess={credentialResponse => {
             if (credentialResponse.credential) {
               try {
                 const decoded = jwtDecode(credentialResponse.credential);
                 setUser(decoded);
-                setIdToken(credentialResponse.credential); // Save id_token for API
-                // Save to localStorage immediately for smoother reloads
-                localStorage.setItem('user', JSON.stringify(decoded));
-                localStorage.setItem('idToken', credentialResponse.credential);
+                setIdToken(credentialResponse.credential);
+                
+                // Only save to localStorage if user chose to remember
+                if (rememberMe) {
+                  localStorage.setItem('user', JSON.stringify(decoded));
+                  localStorage.setItem('idToken', credentialResponse.credential);
+                }
               } catch (err) {
                 alert('Failed to decode id_token: ' + err.message);
               }
@@ -216,7 +256,6 @@ function Dashboard() {
             }
           }}
           onError={() => alert('Login Failed')}
-          useOneTap
         />
       </div>
     );

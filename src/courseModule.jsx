@@ -4,28 +4,25 @@ import { PlantGrowth } from './PlantGrowth.jsx';
 export function CourseModule({ module, onProgressUpdate, initialProgress }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [readingProgress, setReadingProgress] = useState(() => {
-    // Use initial progress from database first, then fallback to localStorage
+    // Use initial progress from database
     if (initialProgress?.readingProgress) {
       return Array.isArray(initialProgress.readingProgress) ? initialProgress.readingProgress : [];
     }
-    const saved = localStorage.getItem(`reading-${module.id}`);
-    return saved ? JSON.parse(saved) : [];
+    return [];
   });
   const [homeworkStatus, setHomeworkStatus] = useState(() => {
-    // Use initial progress from database first, then fallback to localStorage
+    // Use initial progress from database
     if (initialProgress?.homeworkStatus) {
       return initialProgress.homeworkStatus;
     }
-    const saved = localStorage.getItem(`homework-${module.id}`);
-    return saved || 'not-started';
+    return 'not-started';
   });
   const [notes, setNotes] = useState(() => {
-    // Use initial progress from database first, then fallback to localStorage
+    // Use initial progress from database
     if (initialProgress?.notes) {
       return initialProgress.notes;
     }
-    const saved = localStorage.getItem(`notes-${module.id}`);
-    return saved || '';
+    return '';
   });
   
   // Debounced notes for API calls (separate from display notes)
@@ -45,21 +42,6 @@ export function CourseModule({ module, onProgressUpdate, initialProgress }) {
       }
     }
   }, [initialProgress]);
-
-  useEffect(() => {
-    // Save to localStorage
-    localStorage.setItem(`reading-${module.id}`, JSON.stringify(readingProgress));
-  }, [readingProgress, module.id]);
-
-  useEffect(() => {
-    // Save to localStorage
-    localStorage.setItem(`homework-${module.id}`, homeworkStatus);
-  }, [homeworkStatus, module.id]);
-
-  useEffect(() => {
-    // Save to localStorage immediately (for instant feedback)
-    localStorage.setItem(`notes-${module.id}`, notes);
-  }, [notes, module.id]);
 
   // Debounce notes for API calls (wait 1 second after user stops typing)
   useEffect(() => {

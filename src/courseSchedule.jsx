@@ -41,6 +41,14 @@ export function CourseSchedule() {
       });
       
       if (!response.ok) {
+        if (response.status === 401) {
+          // Clear invalid tokens and redirect to sign in
+          localStorage.removeItem('user');
+          localStorage.removeItem('idToken');
+          setUser(null);
+          setIdToken(null);
+          return;
+        }
         throw new Error('Failed to fetch schedules');
       }
       
@@ -57,21 +65,17 @@ export function CourseSchedule() {
       setSavedCourses(formattedCourses);
       
       if (formattedCourses.length > 0) {
-        // Load the first course or most recently used
-        const lastUsed = localStorage.getItem('lastUsedCourse');
-        const courseToLoad = formattedCourses.find(c => c.id === lastUsed) || formattedCourses[0];
-        await loadCourse(courseToLoad);
+        // Load the first course (no localStorage dependency)
+        await loadCourse(formattedCourses[0]);
       }
     } catch (error) {
       console.error('Error loading schedules:', error);
-      // Fallback to localStorage if database fails
-      const saved = localStorage.getItem('savedCourses');
-      if (saved) {
-        const localCourses = JSON.parse(saved);
-        setSavedCourses(localCourses);
-        if (localCourses.length > 0) {
-          loadCourse(localCourses[0]);
-        }
+      if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+        // Clear invalid tokens
+        localStorage.removeItem('user');
+        localStorage.removeItem('idToken');
+        setUser(null);
+        setIdToken(null);
       }
     } finally {
       setIsLoading(false);
@@ -85,29 +89,6 @@ export function CourseSchedule() {
     setModules(parsedModules);
     setCourseName(course.name);
     setActiveCourseId(course.id);
-    localStorage.setItem('lastUsedCourse', course.id);
-    
-    // Clean up old localStorage entries with generic module IDs for this course
-    parsedModules.forEach((module, index) => {
-      const oldModuleId = `module-${index + 1}`; // Old format
-      const oldReading = localStorage.getItem(`reading-${oldModuleId}`);
-      const oldHomework = localStorage.getItem(`homework-${oldModuleId}`);
-      const oldNotes = localStorage.getItem(`notes-${oldModuleId}`);
-      
-      // If old data exists and new data doesn't, migrate it
-      if (oldReading && !localStorage.getItem(`reading-${module.id}`)) {
-        localStorage.setItem(`reading-${module.id}`, oldReading);
-        localStorage.removeItem(`reading-${oldModuleId}`);
-      }
-      if (oldHomework && !localStorage.getItem(`homework-${module.id}`)) {
-        localStorage.setItem(`homework-${module.id}`, oldHomework);
-        localStorage.removeItem(`homework-${oldModuleId}`);
-      }
-      if (oldNotes && !localStorage.getItem(`notes-${module.id}`)) {
-        localStorage.setItem(`notes-${module.id}`, oldNotes);
-        localStorage.removeItem(`notes-${oldModuleId}`);
-      }
-    });
     
     // Load progress from database
     if (user && idToken) {
@@ -135,6 +116,12 @@ export function CourseSchedule() {
           });
           
           setProgressStats(progressMap);
+        } else if (response.status === 401) {
+          // Handle expired token
+          localStorage.removeItem('user');
+          localStorage.removeItem('idToken');
+          setUser(null);
+          setIdToken(null);
         }
       } catch (error) {
         console.error('Error loading progress:', error);
@@ -178,24 +165,18 @@ export function CourseSchedule() {
           if (!response.ok) {
             throw new Error('Failed to save schedule to database');
           }
+          
+          // Reload schedules from database
+          await loadSchedulesFromDatabase();
+          
+          // Load the new course
+          const newCourse = savedCourses.find(c => c.id === courseId);
+          if (newCourse) {
+            await loadCourse(newCourse);
+          }
+        } else {
+          throw new Error('Please sign in to save courses');
         }
-        
-        // Update local state
-        const newCourse = {
-          id: courseId,
-          name: fileName,
-          scheduleData: content,
-          createdAt: new Date().toISOString()
-        };
-        
-        const updatedCourses = [...savedCourses, newCourse];
-        setSavedCourses(updatedCourses);
-        
-        // Fallback to localStorage for offline functionality
-        localStorage.setItem('savedCourses', JSON.stringify(updatedCourses));
-        
-        // Load the new course
-        await loadCourse(newCourse);
         
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
@@ -212,8 +193,6 @@ export function CourseSchedule() {
   };
 
   const deleteCourse = async (courseId) => {
-    
-
     if (confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
       try {
         // Delete from database if user is logged in
@@ -232,21 +211,8 @@ export function CourseSchedule() {
           }
         }
         
-        // Clean up localStorage progress data for the deleted course
-        const courseToDelete = savedCourses.find(c => c.id === courseId);
-        if (courseToDelete) {
-          // Parse the course data to get module IDs for cleanup
-          const parsedModules = ScheduleParser.parseScheduleData(courseToDelete.scheduleData, courseId);
-          parsedModules.forEach(module => {
-            localStorage.removeItem(`reading-${module.id}`);
-            localStorage.removeItem(`homework-${module.id}`);
-            localStorage.removeItem(`notes-${module.id}`);
-          });
-          console.log(`🌸 Cleaned up localStorage data for ${parsedModules.length} modules in course ${courseId}`);
-        }
-        
-        const updatedCourses = savedCourses.filter(c => c.id !== courseId);
-        setSavedCourses(updatedCourses);
+        // Reload schedules from database
+        await loadSchedulesFromDatabase();
         
         // Clear progress stats for the deleted course
         setProgressStats(prev => {
@@ -258,18 +224,18 @@ export function CourseSchedule() {
           });
           return newStats;
         });
-        
-        // Update localStorage as fallback
-        localStorage.setItem('savedCourses', JSON.stringify(updatedCourses));
 
         if (courseId === activeCourseId) {
-          if (updatedCourses.length > 0) {
-            await loadCourse(updatedCourses[0]);
+          if (savedCourses.length > 1) {
+            // Load the first remaining course
+            const remainingCourse = savedCourses.find(c => c.id !== courseId);
+            if (remainingCourse) {
+              await loadCourse(remainingCourse);
+            }
           } else {
             setModules([]);
             setCourseName('');
             setActiveCourseId(null);
-            localStorage.removeItem('lastUsedCourse');
           }
         }
       } catch (error) {
