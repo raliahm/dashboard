@@ -31,52 +31,27 @@ export default async function handler(req, res) {
         if (!userId) return res.status(401).json({ error: 'Unauthorized' });
         if (!id) return res.status(400).json({ error: 'Missing schedule id' });
 
-    // PUT: update an existing schedule
-    if (req.method === 'PUT') {
-      const { course_id, course_name, schedule_data } = req.body;
+         // DELETE: remove progress for a specific module
+    if (req.method === 'DELETE') {
+      const { course_id, module_id } = req.body;
       
-      if (!course_id) {
-        return res.status(400).json({ error: 'course_id is required for updates' });
+      if (!course_id || !module_id) {
+        return res.status(400).json({ error: 'course_id and module_id are required' });
       }
       
       const result = await db.execute({
-        sql: 'UPDATE schedules SET course_name = ?, schedule_data = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND course_id = ? RETURNING *',
-        args: [course_name, schedule_data, userId, course_id],
+        sql: 'DELETE FROM schedule_progress WHERE user_id = ? AND course_id = ? AND module_id = ? RETURNING *',
+        args: [userId, course_id, module_id],
       });
       
       if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'Schedule not found' });
+        return res.status(404).json({ error: 'Progress not found' });
       }
       
-      return res.status(200).json(result.rows[0]);
+      return res.status(200).json({ message: 'Progress deleted successfully' });
     }
 
-    // DELETE: remove a schedule
-    if (req.method === 'DELETE') {
-      const { course_id } = req.body;
-      
-      if (!course_id) {
-        return res.status(400).json({ error: 'course_id is required for deletion' });
-      }
-      
-      // First, delete related progress entries
-      await db.execute({
-        sql: 'DELETE FROM schedule_progress WHERE user_id = ? AND course_id = ?',
-        args: [userId, course_id],
-      });
-      
-      // Then delete the schedule
-      const result = await db.execute({
-        sql: 'DELETE FROM schedules WHERE user_id = ? AND course_id = ? RETURNING *',
-        args: [userId, course_id],
-      });
-      
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'Schedule not found' });
-      }
-      
-      return res.status(200).json({ message: 'Schedule deleted successfully', deleted: result.rows[0] });
-    }
+   
 
         return res.status(405).json({ error: 'Method not allowed' });
     } catch (error) {

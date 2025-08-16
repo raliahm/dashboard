@@ -81,27 +81,7 @@ export default async function handler(req, res) {
       
       return res.status(200).json(result.rows[0]);
     }
-
-    // DELETE: remove progress for a specific module
-    if (req.method === 'DELETE') {
-      const { course_id, module_id } = req.body;
-      
-      if (!course_id || !module_id) {
-        return res.status(400).json({ error: 'course_id and module_id are required' });
-      }
-      
-      const result = await db.execute({
-        sql: 'DELETE FROM schedule_progress WHERE user_id = ? AND course_id = ? AND module_id = ? RETURNING *',
-        args: [userId, course_id, module_id],
-      });
-      
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'Progress not found' });
-      }
-      
-      return res.status(200).json({ message: 'Progress deleted successfully' });
-    }
-
+   
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (error) {
     console.error('Schedule Progress API error:', error);
