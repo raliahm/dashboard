@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { PlantGrowth } from './PlantGrowth.jsx';
 
 export function CourseModule({ module, onProgressUpdate, initialProgress }) {
@@ -27,6 +27,9 @@ export function CourseModule({ module, onProgressUpdate, initialProgress }) {
     const saved = localStorage.getItem(`notes-${module.id}`);
     return saved || '';
   });
+  
+  // Debounced notes for API calls (separate from display notes)
+  const [debouncedNotes, setDebouncedNotes] = useState(notes);
 
   // Update state when initialProgress changes (from database load)
   useEffect(() => {
@@ -54,19 +57,40 @@ export function CourseModule({ module, onProgressUpdate, initialProgress }) {
   }, [homeworkStatus, module.id]);
 
   useEffect(() => {
-    // Save to localStorage
+    // Save to localStorage immediately (for instant feedback)
     localStorage.setItem(`notes-${module.id}`, notes);
   }, [notes, module.id]);
 
+  // Debounce notes for API calls (wait 1 second after user stops typing)
   useEffect(() => {
-    // Update parent component about progress
+    const timer = setTimeout(() => {
+      setDebouncedNotes(notes);
+    }, 1000); // 1 second delay
+
+    return () => clearTimeout(timer);
+  }, [notes]);
+
+  // Update parent component about progress (separate effects for instant vs debounced)
+  useEffect(() => {
+    // Update reading progress and homework immediately
     onProgressUpdate?.(module.id, {
-      readingProgress: readingProgress, // Pass the actual array, not just length
+      readingProgress: readingProgress,
       homeworkStatus,
-      hasNotes: notes.length > 0,
-      notes: notes // Pass the actual notes content
+      hasNotes: debouncedNotes.length > 0,
+      notes: debouncedNotes // Use debounced notes for API calls
     });
-  }, [readingProgress, homeworkStatus, notes, module.id]); // Removed onProgressUpdate from dependencies
+  }, [readingProgress, homeworkStatus, module.id]);
+
+  // Separate effect for debounced notes updates
+  useEffect(() => {
+    // Only update notes when debounced notes change
+    onProgressUpdate?.(module.id, {
+      readingProgress: readingProgress,
+      homeworkStatus,
+      hasNotes: debouncedNotes.length > 0,
+      notes: debouncedNotes
+    });
+  }, [debouncedNotes, module.id]);
   const getStatusColor = () => {
     switch (module.status) {
       case 'completed': return 'bg-green-50 border-green-400 text-green-800';
