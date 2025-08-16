@@ -640,7 +640,16 @@ Thu 8/21	Basic Concepts	Ch. 3	Assignment 1 due	Week 1`}
                 
                   {/* Horizontal Hearts Row (3 at a time) */}
                   <div className="hearts-row mb-4">
-                    <div className="flex justify-center gap-2">
+                    <div 
+                      className="flex justify-center gap-2"
+                      style={{ 
+                        display: 'flex', 
+                        flexDirection: 'row', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        flexWrap: 'nowrap'
+                      }}
+                    >
                       {Array.from({ length: 3 }, (_, index) => {
                         const heartNumber = (Math.floor(earnedHearts / 3) * 3) + index + 1;
                         const isEarned = heartNumber <= earnedHearts;

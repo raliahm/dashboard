@@ -986,9 +986,19 @@ body, html, #root {
   border: 2px solid rgba(255, 182, 193, 0.4);
 }
 
+.hearts-row .flex {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-wrap: nowrap !important;
+}
+
 .heart-item {
   animation: heartBeat 2s ease-in-out infinite;
   transition: all 0.3s ease;
+  display: inline-block !important;
+  flex-shrink: 0 !important;
 }
 
 .heart-item:hover {
