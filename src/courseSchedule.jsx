@@ -81,11 +81,33 @@ export function CourseSchedule() {
   const loadCourse = async (course) => {
     if (!course) return;
     
-    const parsedModules = ScheduleParser.parseScheduleData(course.scheduleData);
+    const parsedModules = ScheduleParser.parseScheduleData(course.scheduleData, course.id);
     setModules(parsedModules);
     setCourseName(course.name);
     setActiveCourseId(course.id);
     localStorage.setItem('lastUsedCourse', course.id);
+    
+    // Clean up old localStorage entries with generic module IDs for this course
+    parsedModules.forEach((module, index) => {
+      const oldModuleId = `module-${index + 1}`; // Old format
+      const oldReading = localStorage.getItem(`reading-${oldModuleId}`);
+      const oldHomework = localStorage.getItem(`homework-${oldModuleId}`);
+      const oldNotes = localStorage.getItem(`notes-${oldModuleId}`);
+      
+      // If old data exists and new data doesn't, migrate it
+      if (oldReading && !localStorage.getItem(`reading-${module.id}`)) {
+        localStorage.setItem(`reading-${module.id}`, oldReading);
+        localStorage.removeItem(`reading-${oldModuleId}`);
+      }
+      if (oldHomework && !localStorage.getItem(`homework-${module.id}`)) {
+        localStorage.setItem(`homework-${module.id}`, oldHomework);
+        localStorage.removeItem(`homework-${oldModuleId}`);
+      }
+      if (oldNotes && !localStorage.getItem(`notes-${module.id}`)) {
+        localStorage.setItem(`notes-${module.id}`, oldNotes);
+        localStorage.removeItem(`notes-${oldModuleId}`);
+      }
+    });
     
     // Load progress from database
     if (user && idToken) {
@@ -247,9 +269,6 @@ export function CourseSchedule() {
     // Save progress to database if user is logged in
     if (activeCourseId && user && idToken) {
       try {
-        console.log('🌸 Saving progress for module:', moduleId, 'to course:', activeCourseId); // Debug log
-        console.log('🌿 Progress data:', progress); // Debug log
-        
         const requestBody = {
           course_id: activeCourseId,
           module_id: moduleId,
@@ -257,8 +276,6 @@ export function CourseSchedule() {
           homework_status: progress.homeworkStatus || 'not-started',
           notes: progress.notes || '',
         };
-        
-        console.log('🌱 Request body:', requestBody); // Debug log
         
         const response = await fetch('/api/schedule_progress', {
           method: 'POST',
@@ -269,8 +286,6 @@ export function CourseSchedule() {
           body: JSON.stringify(requestBody),
         });
         
-        console.log('🌸 Response status:', response.status); // Debug log
-        
         if (!response.ok) {
           const errorData = await response.json();
           console.error('🥀 API Error:', errorData);
@@ -278,18 +293,12 @@ export function CourseSchedule() {
         }
         
         const savedData = await response.json();
-        console.log('🌺 Progress saved successfully:', savedData); // Debug log
+        console.log('🌺 Progress saved successfully for:', moduleId);
         
       } catch (error) {
         console.error('🥀 Error saving progress:', error);
         alert(`Failed to save progress to database: ${error.message}\nYour changes are saved locally.`);
       }
-    } else {
-      console.log('🌿 Not saving to database - missing requirements:', {
-        hasActiveCourseId: !!activeCourseId,
-        hasUser: !!user,
-        hasIdToken: !!idToken
-      });
     }
   }, [activeCourseId, user, idToken]); // Dependencies for useCallback
 

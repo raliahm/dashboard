@@ -1,6 +1,6 @@
 // src/utils/scheduleParser.js
 export class ScheduleParser {
-  static parseScheduleData(rawData) {
+  static parseScheduleData(rawData, courseId = 'default') {
     const lines = rawData.trim().split('\n');
     const modules = [];
     
@@ -11,7 +11,7 @@ export class ScheduleParser {
       
       if (date && topics) {
         modules.push({
-          id: `module-${index}`,
+          id: `${courseId}-module-${index}`, // Make module IDs unique per course
           date: this.parseDate(date),
           topics: topics.trim(),
           readings: readings?.trim() || '',
