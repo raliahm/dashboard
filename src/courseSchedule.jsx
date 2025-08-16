@@ -90,7 +90,7 @@ export function CourseSchedule() {
     // Load progress from database
     if (user && idToken) {
       try {
-        const response = await fetch(`/api/schedule-progress?course_id=${course.id}`, {
+        const response = await fetch(`/api/schedule_progress?course_id=${course.id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -247,36 +247,49 @@ export function CourseSchedule() {
     // Save progress to database if user is logged in
     if (activeCourseId && user && idToken) {
       try {
-        console.log('Saving progress for module:', moduleId, 'with notes:', progress.notes); // Debug log
+        console.log('🌸 Saving progress for module:', moduleId, 'to course:', activeCourseId); // Debug log
+        console.log('🌿 Progress data:', progress); // Debug log
         
-        const response = await fetch('/api/schedule-progress', {
+        const requestBody = {
+          course_id: activeCourseId,
+          module_id: moduleId,
+          reading_progress: Array.isArray(progress.readingProgress) ? progress.readingProgress : [],
+          homework_status: progress.homeworkStatus || 'not-started',
+          notes: progress.notes || '',
+        };
+        
+        console.log('🌱 Request body:', requestBody); // Debug log
+        
+        const response = await fetch('/api/schedule_progress', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${idToken}`,
           },
-          body: JSON.stringify({
-            course_id: activeCourseId,
-            module_id: moduleId,
-            reading_progress: Array.isArray(progress.readingProgress) ? progress.readingProgress : [],
-            homework_status: progress.homeworkStatus || 'not-started',
-            notes: progress.notes || '',
-          }),
+          body: JSON.stringify(requestBody),
         });
+        
+        console.log('🌸 Response status:', response.status); // Debug log
         
         if (!response.ok) {
           const errorData = await response.json();
-          console.error('API Error:', errorData);
+          console.error('🥀 API Error:', errorData);
           throw new Error(`Failed to save progress: ${errorData.error || response.statusText}`);
         }
         
         const savedData = await response.json();
-        console.log('Progress saved successfully:', savedData); // Debug log
+        console.log('🌺 Progress saved successfully:', savedData); // Debug log
         
       } catch (error) {
-        console.error('Error saving progress:', error);
-        alert('Failed to save progress to database. Your changes are saved locally.');
+        console.error('🥀 Error saving progress:', error);
+        alert(`Failed to save progress to database: ${error.message}\nYour changes are saved locally.`);
       }
+    } else {
+      console.log('🌿 Not saving to database - missing requirements:', {
+        hasActiveCourseId: !!activeCourseId,
+        hasUser: !!user,
+        hasIdToken: !!idToken
+      });
     }
   };
 

@@ -1,7 +1,6 @@
 import { createClient } from '@libsql/client';
 import fetch from 'node-fetch';
 
-// filepath: c:\Users\rebaa\ML Engineering Course\dashboard\api\schedules\[id].js
 
 export default async function handler(req, res) {
     const db = createClient({
