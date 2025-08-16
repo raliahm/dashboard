@@ -638,104 +638,86 @@ Thu 8/21	Basic Concepts	Ch. 3	Assignment 1 due	Week 1`}
                   </p>
                 </div>
                 
-                {/* Single Large Flower Bed with Hearts and Flowers */}
-                <div className="main-garden-bed bg-gradient-to-b from-amber-50 to-green-100 rounded-2xl p-6 border-3 border-amber-200 relative overflow-hidden min-h-[200px]">
-                  {/* Garden Ground */}
-                  <div className="garden-soil absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-amber-800 to-amber-600 rounded-b-2xl"></div>
-                  
-                  {/* Floating Hearts in the Garden */}
-                  <div className="floating-hearts absolute inset-0 p-4">
-                    {Array.from({ length: earnedHearts }, (_, index) => (
-                      <div
-                        key={index}
-                        className="floating-heart absolute"
-                        style={{
-                          left: `${15 + (index * 8) % 70}%`,
-                          top: `${20 + (Math.sin(index) * 30 + 30)}%`,
-                          transform: `rotate(${(index * 15) % 60 - 30}deg)`,
-                          animationDelay: `${index * 0.2}s`,
-                          fontSize: `${1.2 + (index % 3) * 0.3}rem`
-                        }}
-                        title={`Heart ${index + 1} - Earned!`}
-                      >
-                        <span className="text-red-500 animate-pulse hover:scale-125 transition-transform cursor-pointer">
-                          ❤️
-                        </span>
-                      </div>
-                    ))}
+                  {/* Horizontal Hearts Row (3 at a time) */}
+                  <div className="hearts-row mb-4">
+                    <div className="flex justify-center gap-2">
+                      {Array.from({ length: 3 }, (_, index) => {
+                        const heartNumber = (Math.floor(earnedHearts / 3) * 3) + index + 1;
+                        const isEarned = heartNumber <= earnedHearts;
+                        return (
+                          <div
+                            key={index}
+                            className="heart-item"
+                            style={{
+                              animationDelay: `${index * 0.1}s`
+                            }}
+                            title={`Heart ${heartNumber} ${isEarned ? '- Earned!' : '- Not yet earned'}`}
+                          >
+                            <span className={`text-xl transition-transform cursor-pointer ${
+                              isEarned 
+                                ? 'text-red-500 animate-pulse hover:scale-125' 
+                                : 'text-gray-400 opacity-50'
+                            }`}>
+                              {isEarned ? '❤️' : '🤍'}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="text-center text-xs text-green-600 mt-1">
+                      Hearts {Math.floor(earnedHearts / 3) * 3 + 1}-{Math.floor(earnedHearts / 3) * 3 + 3} of {totalPossibleHearts}
+                    </div>
                   </div>
                   
-                  {/* Flowers in the Garden */}
-                  <div className="garden-flowers absolute inset-0 p-4">
-                    {Array.from({ length: flowers }, (_, index) => {
-                      const flowerTypes = [
-                        'cottagecore-flower-pink',
-                        'cottagecore-flower-orange',  
-                        'cottagecore-flower-purple',
-                        'cottagecore-flower-yellow',
-                        'cottagecore-berry',
-                      ];
+                  {/* Horizontal Flowers Row */}
+                  <div className="flowers-row">
+                    <div className="flex justify-center gap-3 flex-wrap">
+                      {Array.from({ length: flowers }, (_, index) => {
+                        const flowerTypes = [
+                          'cottagecore-flower-pink',
+                          'cottagecore-flower-orange',  
+                          'cottagecore-flower-purple',
+                          'cottagecore-flower-yellow',
+                          'cottagecore-berry',
+                        ];
+                        
+                        const flowerType = flowerTypes[index % flowerTypes.length];
+                        
+                        return (
+                          <div
+                            key={index}
+                            className="flower-display transition-all duration-500 transform hover:scale-110 animate-bounce"
+                            style={{
+                              animationDelay: `${index * 0.3}s`
+                            }}
+                            title={`${flowerType.replace('cottagecore-', '').replace('-', ' ')} - Bloomed from ${(index + 1) * 3} hearts!`}
+                          >
+                            <div className={`cottagecore-plant ${flowerType}`} />
+                          </div>
+                        );
+                      })}
                       
-                      const flowerType = flowerTypes[index % flowerTypes.length];
-                      
-                      return (
-                        <div
-                          key={index}
-                          className="garden-flower absolute"
-                          style={{
-                            left: `${25 + (index * 15) % 50}%`,
-                            bottom: `${30 + (index % 3) * 20}%`,
-                            transform: `scale(${1.2 + (index % 2) * 0.3})`,
-                            animationDelay: `${index * 0.5}s`
-                          }}
-                          title={`${flowerType.replace('cottagecore-', '').replace('-', ' ')} - Bloomed from ${(index + 1) * 3} hearts!`}
-                        >
-                          <div className="garden-ground">
-                            <div className={`cottagecore-plant ${flowerType} animate-bounce`} />
+                      {/* Show next flower in progress */}
+                      {earnedHearts % 3 > 0 && (
+                        <div className="next-flower-display transition-all duration-500 transform hover:scale-110 animate-pulse">
+                          <div className={`cottagecore-plant ${earnedHearts % 3 === 1 ? 'plant-seed' : 'plant-sprout'}`} />
+                          <div className="text-xs text-green-600 text-center mt-1 font-medium">
+                            {earnedHearts % 3}/3
                           </div>
                         </div>
-                      );
-                    })}
+                      )}
+                    </div>
                   </div>
                   
-                  {/* Special garden creatures */}
+                  {/* Special creatures when you have many flowers */}
                   {flowers >= 3 && (
-                    <div className="garden-creatures absolute inset-0">
-                      <div 
-                        className="cottagecore-butterfly absolute"
-                        style={{ 
-                          right: '20%', 
-                          top: '25%',
-                          animationDelay: '1s'
-                        }}
-                        title="Beautiful garden attracted a butterfly!"
-                      />
+                    <div className="garden-creatures flex justify-center mt-3 gap-4">
+                      <div className="cottagecore-butterfly" title="Beautiful garden attracted a butterfly!" />
                       {flowers >= 6 && (
-                        <div 
-                          className="cottagecore-ladybug absolute"
-                          style={{ 
-                            left: '25%', 
-                            bottom: '40%',
-                            animationDelay: '2s'
-                          }}
-                          title="Lucky ladybug found your garden!"
-                        />
+                        <div className="cottagecore-ladybug" title="Lucky ladybug found your garden!" />
                       )}
                     </div>
                   )}
-                  
-                  {/* Growing spots for next flowers */}
-                  {earnedHearts % 3 > 0 && (
-                    <div className="next-flower absolute" style={{ right: '30%', bottom: '35%' }}>
-                      <div className="garden-ground">
-                        <div className={`cottagecore-plant ${earnedHearts % 3 === 1 ? 'plant-seed' : 'plant-sprout'} animate-pulse`} />
-                      </div>
-                      <div className="text-xs text-green-600 text-center mt-1 font-medium">
-                        {earnedHearts % 3}/3 hearts
-                      </div>
-                    </div>
-                  )}
-                </div>
               </div>
             );
           })()}
