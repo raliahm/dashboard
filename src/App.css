@@ -674,3 +674,295 @@ body, html, #root {
   border: 2px solid #8b7355;
   box-shadow: inset 0 2px 4px rgba(0,0,0,0.2), 0 1px 2px rgba(0,0,0,0.1);
 }
+
+/* Cottagecore Hand-drawn Plant Styles */
+.cottagecore-plant {
+  position: relative;
+  display: inline-block;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+  transition: all 0.3s ease;
+}
+
+.cottagecore-plant:hover {
+  transform: translateY(-2px) scale(1.05);
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+}
+
+/* Seed/Sprout Styles */
+.plant-seed {
+  width: 16px;
+  height: 16px;
+  background: radial-gradient(circle, #8B4513 0%, #654321 100%);
+  border-radius: 50% 50% 50% 70%;
+  border: 1px solid #5D4037;
+  position: relative;
+}
+
+.plant-seed::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  width: 4px;
+  height: 4px;
+  background: #A0522D;
+  border-radius: 50%;
+}
+
+.plant-sprout {
+  width: 20px;
+  height: 24px;
+  position: relative;
+}
+
+.plant-sprout::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 12px;
+  background: linear-gradient(to top, #4CAF50, #66BB6A);
+  border-radius: 1px;
+}
+
+.plant-sprout::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 6px;
+  background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+  border-radius: 50% 0 50% 50%;
+  transform-origin: bottom center;
+  animation: leafSway 3s ease-in-out infinite;
+}
+
+/* Hand-drawn Flower Styles */
+.cottagecore-flower-pink {
+  width: 28px;
+  height: 32px;
+  position: relative;
+}
+
+.cottagecore-flower-pink::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 20px;
+  background: linear-gradient(to top, #2E7D32, #4CAF50);
+  border-radius: 1.5px;
+}
+
+.cottagecore-flower-pink::after {
+  content: '🌸';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  filter: hue-rotate(320deg) saturate(1.2);
+}
+
+.cottagecore-flower-orange {
+  width: 28px;
+  height: 32px;
+  position: relative;
+}
+
+.cottagecore-flower-orange::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 20px;
+  background: linear-gradient(to top, #2E7D32, #4CAF50);
+  border-radius: 1.5px;
+}
+
+.cottagecore-flower-orange::after {
+  content: '🌺';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  filter: hue-rotate(15deg) saturate(1.3);
+}
+
+.cottagecore-flower-purple {
+  width: 28px;
+  height: 32px;
+  position: relative;
+}
+
+.cottagecore-flower-purple::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 20px;
+  background: linear-gradient(to top, #2E7D32, #4CAF50);
+  border-radius: 1.5px;
+}
+
+.cottagecore-flower-purple::after {
+  content: '🌻';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  filter: hue-rotate(270deg) saturate(1.1);
+}
+
+.cottagecore-flower-yellow {
+  width: 28px;
+  height: 32px;
+  position: relative;
+}
+
+.cottagecore-flower-yellow::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 20px;
+  background: linear-gradient(to top, #2E7D32, #4CAF50);
+  border-radius: 1.5px;
+}
+
+.cottagecore-flower-yellow::after {
+  content: '🌼';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  filter: hue-rotate(45deg) saturate(1.2);
+}
+
+/* Special Elements */
+.cottagecore-berry {
+  width: 20px;
+  height: 20px;
+  position: relative;
+}
+
+.cottagecore-berry::after {
+  content: '🍓';
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 18px;
+  filter: saturate(1.3) brightness(1.1);
+}
+
+.cottagecore-butterfly {
+  width: 24px;
+  height: 20px;
+  position: relative;
+  animation: flutter 4s ease-in-out infinite;
+}
+
+.cottagecore-butterfly::after {
+  content: '🦋';
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 20px;
+  filter: hue-rotate(30deg) saturate(1.2);
+}
+
+.cottagecore-ladybug {
+  width: 18px;
+  height: 18px;
+  position: relative;
+  animation: crawl 6s linear infinite;
+}
+
+.cottagecore-ladybug::after {
+  content: '🐞';
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 16px;
+}
+
+/* Garden Ground */
+.garden-ground {
+  position: relative;
+  background: linear-gradient(to bottom, 
+    #8BC34A 0%,
+    #689F38 30%,
+    #558B2F 60%,
+    #33691E 100%
+  );
+  border-radius: 8px;
+  padding: 8px;
+  margin: 2px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.garden-ground::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    #5D4037 0px,
+    #5D4037 2px,
+    #6D4C41 2px,
+    #6D4C41 4px
+  );
+  border-radius: 0 0 8px 8px;
+}
+
+/* Animations */
+@keyframes leafSway {
+  0%, 100% {
+    transform: translateX(-50%) rotate(-5deg);
+  }
+  50% {
+    transform: translateX(-50%) rotate(5deg);
+  }
+}
+
+@keyframes flutter {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-4px) rotate(-5deg);
+  }
+  75% {
+    transform: translateY(-2px) rotate(3deg);
+  }
+}
+
+@keyframes crawl {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(10px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}

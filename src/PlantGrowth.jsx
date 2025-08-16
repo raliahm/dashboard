@@ -40,12 +40,30 @@ export function PlantGrowth({ growth, moduleStatus, progress }) {
 
   const getPlantStage = () => {
     switch (currentStage) {
-      case 0: return { emoji: '🌱', color: 'from-gray-300 to-gray-400' };
-      case 1: return { emoji: '🌿', color: 'from-green-200 to-green-300' };
-      case 2: return { emoji: '🌳', color: 'from-green-300 to-green-500' };
-      case 3: return { emoji: '🌸', color: 'from-pink-300 to-pink-500' };
-      case 4: return { emoji: '🌺', color: 'from-pink-500 to-purple-500' };
-      default: return { emoji: '🌱', color: 'from-gray-300 to-gray-400' };
+      case 0: return { 
+        component: <div className="plant-seed" />, 
+        color: 'from-gray-300 to-gray-400' 
+      };
+      case 1: return { 
+        component: <div className="plant-sprout" />, 
+        color: 'from-green-200 to-green-300' 
+      };
+      case 2: return { 
+        component: <div className="cottagecore-plant cottagecore-flower-yellow" />, 
+        color: 'from-green-300 to-green-500' 
+      };
+      case 3: return { 
+        component: <div className="cottagecore-plant cottagecore-flower-pink" />, 
+        color: 'from-pink-300 to-pink-500' 
+      };
+      case 4: return { 
+        component: <div className="cottagecore-plant cottagecore-flower-purple" />, 
+        color: 'from-pink-500 to-purple-500' 
+      };
+      default: return { 
+        component: <div className="plant-seed" />, 
+        color: 'from-gray-300 to-gray-400' 
+      };
     }
   };
 
@@ -80,12 +98,14 @@ export function PlantGrowth({ growth, moduleStatus, progress }) {
       
       {/* Plant Container */}
       <div 
-        className={`plant-container text-2xl transition-all duration-500 ${
+        className={`plant-container transition-all duration-500 ${
           isAnimating ? 'scale-125 animate-bounce' : 'hover:scale-110'
         }`}
         title={getPlantMessage()}
       >
-        {plant.emoji}
+        <div className="garden-ground">
+          {plant.component}
+        </div>
       </div>
       
       {/* Game-style Potion */}

@@ -487,7 +487,7 @@ Thu 8/21	Basic Concepts	Ch. 3	Assignment 1 due	Week 1`}
                   📁 Upload Schedule
                 </label>
                 
-                {savedCourses.length > 1 && (
+                {savedCourses.length > 0 && (
                   <button
                     onClick={() => deleteCourse(activeCourseId)}
                     className="cottagecore-btn cottagecore-btn-small cottagecore-btn-red"
@@ -570,32 +570,187 @@ Thu 8/21	Basic Concepts	Ch. 3	Assignment 1 due	Week 1`}
               </button>
             )}
               {/* Course Progress Garden */}
+      {/* Heart-Based Health System Garden */}
       {modules.length > 0 && (
         <div className="progress-garden mt-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-4 border-2 border-green-200">
           <h4 className="font-semibold text-green-700 mb-3 text-center flex items-center justify-center gap-2">
-            🌻 Your Learning Garden
+            💚 Your Heart Garden
           </h4>
-          <div className="garden-progress flex justify-center gap-2 flex-wrap">
-            {modules.slice(0, 15).map((module, index) => {
-              const progress = progressStats[module.id];
-              const isActive = progress?.readingProgress > 0 || progress?.homeworkStatus !== 'not-started';
+          
+          {/* Heart Health System */}
+          <div className="heart-health-system mb-4">
+            {(() => {
+              // Calculate total possible hearts (modules + all readings)
+              let totalPossibleHearts = 0;
+              let earnedHearts = 0;
+              
+              modules.forEach(module => {
+                // Count module completion as 1 heart
+                totalPossibleHearts += 1;
+                
+                // Count each reading as 1 heart
+                if (module.readings) {
+                  const moduleReadings = module.readings.split(',').map(r => r.trim()).filter(r => r);
+                  totalPossibleHearts += moduleReadings.length;
+                  
+                  // Count earned hearts from this module
+                  const progress = progressStats[module.id];
+                  if (progress) {
+                    // Hearts from completed readings
+                    if (progress.readingProgress && Array.isArray(progress.readingProgress)) {
+                      earnedHearts += progress.readingProgress.length;
+                    }
+                    // Heart from module completion (homework done)
+                    if (progress.homeworkStatus === 'completed') {
+                      earnedHearts += 1;
+                    }
+                  }
+                }
+              });
+              
+              // Generate hearts display
+              const heartsPerRow = 10;
+              const heartRows = Math.ceil(totalPossibleHearts / heartsPerRow);
+              const flowers = Math.floor(earnedHearts / 3); // 1 flower per 3 hearts
+              
               return (
-                <div
-                  key={module.id}
-                  className={`garden-plant text-2xl transition-all duration-500 transform hover:scale-125 ${
-                    isActive ? 'animate-pulse' : 'opacity-50'
-                  }`}
-                  title={`${module.topics} - ${isActive ? 'Growing!' : 'Waiting to grow'}`}
-                >
-                  {module.status === 'completed' ? '🌺' : 
-                   module.status === 'current' ? '🌸' : 
-                   isActive ? '🌱' : '🌰'}
+                <div className="hearts-and-flowers">
+                  {/* Hearts Display */}
+                  <div className="hearts-grid mb-4">
+                    {Array.from({ length: heartRows }, (_, rowIndex) => (
+                      <div key={rowIndex} className="heart-row flex justify-center gap-1 mb-2">
+                        {Array.from({ length: Math.min(heartsPerRow, totalPossibleHearts - (rowIndex * heartsPerRow)) }, (_, heartIndex) => {
+                          const heartNumber = (rowIndex * heartsPerRow) + heartIndex + 1;
+                          const isEarned = heartNumber <= earnedHearts;
+                          return (
+                            <span
+                              key={heartIndex}
+                              className={`heart text-lg transition-all duration-300 ${
+                                isEarned 
+                                  ? 'text-red-500 animate-pulse scale-110' 
+                                  : 'text-gray-300 opacity-60'
+                              }`}
+                              title={`Heart ${heartNumber}/${totalPossibleHearts} ${isEarned ? '- Earned!' : '- Not yet earned'}`}
+                            >
+                              {isEarned ? '❤️' : '🤍'}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Progress Stats */}
+                  <div className="progress-stats text-center mb-4">
+                    <p className="text-green-700 font-semibold">
+                      💚 {earnedHearts}/{totalPossibleHearts} Hearts Earned
+                    </p>
+                    <p className="text-green-600 text-sm">
+                      🌸 {flowers} Flowers Bloomed (1 flower per 3 hearts)
+                    </p>
+                  </div>
+                  
+                  {/* Flower Garden */}
+                  <div className="flower-garden">
+                    <div className="flowers-display flex justify-center gap-3 flex-wrap">
+                      {Array.from({ length: Math.max(6, flowers + 3) }, (_, index) => {
+                        const isBloomedFlower = index < flowers;
+                        const isNextFlower = index === flowers && earnedHearts % 3 > 0;
+                        const nextFlowerProgress = earnedHearts % 3;
+                        
+                        let plantComponent = null;
+                        let flowerTitle = 'Seed waiting to grow';
+                        
+                        if (isBloomedFlower) {
+                          // Full flowers with variety from your cottagecore images
+                          const flowerTypes = [
+                            'cottagecore-flower-pink',    // Pink flower like in your first image
+                            'cottagecore-flower-orange',  // Orange flower
+                            'cottagecore-flower-purple',  // Purple flower  
+                            'cottagecore-flower-yellow',  // Yellow flower
+                            'cottagecore-berry',         // Cherry/strawberry
+                            'cottagecore-butterfly',     // Butterfly as special reward
+                          ];
+                          
+                          const flowerType = flowerTypes[index % flowerTypes.length];
+                          
+                          // Add special elements occasionally
+                          if (index > 0 && index % 4 === 0) {
+                            plantComponent = (
+                              <div className="garden-ground">
+                                <div className={`cottagecore-plant ${flowerType}`} />
+                                {index % 8 === 0 && <div className="cottagecore-ladybug" />}
+                              </div>
+                            );
+                          } else {
+                            plantComponent = (
+                              <div className="garden-ground">
+                                <div className={`cottagecore-plant ${flowerType}`} />
+                              </div>
+                            );
+                          }
+                          
+                          flowerTitle = `${flowerType.replace('cottagecore-', '').replace('-', ' ')} - Fully bloomed!`;
+                          
+                        } else if (isNextFlower) {
+                          // Growth stages based on hearts earned toward next flower
+                          if (nextFlowerProgress === 1) {
+                            plantComponent = (
+                              <div className="garden-ground">
+                                <div className="cottagecore-plant plant-sprout" />
+                              </div>
+                            );
+                            flowerTitle = 'Sprouting... (1/3 hearts)';
+                          } else if (nextFlowerProgress === 2) {
+                            plantComponent = (
+                              <div className="garden-ground">
+                                <div className="cottagecore-plant plant-sprout" />
+                              </div>
+                            );
+                            flowerTitle = 'Growing strong... (2/3 hearts)';
+                          }
+                        } else {
+                          // Seed stage
+                          plantComponent = (
+                            <div className="garden-ground">
+                              <div className="cottagecore-plant plant-seed" />
+                            </div>
+                          );
+                        }
+                        
+                        return (
+                          <div
+                            key={index}
+                            className={`flower-plot transition-all duration-500 transform hover:scale-110 ${
+                              isBloomedFlower ? 'animate-bounce' : 
+                              isNextFlower ? 'animate-pulse' : 
+                              'opacity-60'
+                            }`}
+                            title={flowerTitle}
+                          >
+                            {plantComponent}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Special garden decorations when you have many flowers */}
+                    {flowers >= 5 && (
+                      <div className="garden-decorations flex justify-center mt-2 gap-4">
+                        <div className="cottagecore-butterfly" title="Beautiful garden attracted a butterfly!" />
+                        {flowers >= 10 && (
+                          <div className="cottagecore-ladybug" title="Lucky ladybug found your garden!" />
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
-            })}
+            })()}
           </div>
+          
           <p className="text-center text-green-600 text-xs mt-2 font-medium">
-            Complete readings and assignments to grow your garden! 🌿
+            Complete readings and assignments to earn hearts and grow flowers! 🌿
           </p>
         </div>
       )}
