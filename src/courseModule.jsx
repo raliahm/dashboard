@@ -60,7 +60,6 @@ export function CourseModule({ module, onProgressUpdate, initialProgress }) {
 
   useEffect(() => {
     // Update parent component about progress
-    console.log('Updating progress for module:', module.id, 'with notes length:', notes.length); // Debug log
     onProgressUpdate?.(module.id, {
       readingProgress: readingProgress, // Pass the actual array, not just length
       homeworkStatus,

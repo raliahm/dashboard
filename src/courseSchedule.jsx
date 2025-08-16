@@ -291,29 +291,58 @@ export function CourseSchedule() {
 
   const getOverallStats = () => {
     const totalModules = modules.length;
-    const completedModules = modules.filter(m => m.status === 'completed').length;
     
-    // Calculate actual completed readings vs total readings
+    // Calculate actual completed modules based on user progress, not just dates
+    let actuallyCompletedModules = 0;
     let totalCompletedReadings = 0;
     let totalReadings = 0;
     
     modules.forEach(module => {
+      const moduleProgress = progressStats[module.id];
+      let moduleIsComplete = false;
+      
       if (module.readings) {
         const moduleReadings = module.readings.split(',').map(r => r.trim()).filter(r => r);
         totalReadings += moduleReadings.length;
         
         // Get completed readings for this module
-        const moduleProgress = progressStats[module.id];
-        if (moduleProgress && typeof moduleProgress.readingProgress === 'number') {
-          totalCompletedReadings += moduleProgress.readingProgress;
+        if (moduleProgress && moduleProgress.readingProgress) {
+          // Handle both array and number formats
+          let completedCount = 0;
+          if (Array.isArray(moduleProgress.readingProgress)) {
+            completedCount = moduleProgress.readingProgress.length;
+          } else if (typeof moduleProgress.readingProgress === 'number') {
+            completedCount = moduleProgress.readingProgress;
+          }
+          totalCompletedReadings += completedCount;
+          
+          // Module is complete if all readings are done AND homework is complete
+          const allReadingsComplete = completedCount >= moduleReadings.length;
+          const homeworkComplete = moduleProgress.homeworkStatus === 'completed';
+          
+          if (allReadingsComplete && (module.homework ? homeworkComplete : true)) {
+            moduleIsComplete = true;
+          }
         }
+      } else {
+        // If no readings, just check homework completion
+        if (moduleProgress && module.homework) {
+          moduleIsComplete = moduleProgress.homeworkStatus === 'completed';
+        } else if (!module.homework) {
+          // If no readings and no homework, consider complete if it has notes or is past due
+          moduleIsComplete = (moduleProgress && moduleProgress.hasNotes) || module.status === 'completed';
+        }
+      }
+      
+      if (moduleIsComplete) {
+        actuallyCompletedModules++;
       }
     });
 
     return {
-      moduleProgress: `${completedModules}/${totalModules}`,
+      moduleProgress: `${actuallyCompletedModules}/${totalModules}`,
       readingProgress: `${totalCompletedReadings}/${totalReadings}`,
-      overallCompletion: Math.round((completedModules / totalModules) * 100)
+      overallCompletion: Math.round((actuallyCompletedModules / totalModules) * 100)
     };
   };
 
