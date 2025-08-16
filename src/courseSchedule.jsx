@@ -680,7 +680,17 @@ Thu 8/21	Basic Concepts	Ch. 3	Assignment 1 due	Week 1`}
                   
                   {/* Horizontal Flowers Row */}
                   <div className="flowers-row">
-                    <div className="flex justify-center gap-3 flex-wrap">
+                    <div 
+                      className="flex justify-center gap-3 flex-wrap"
+                      style={{ 
+                        display: 'flex', 
+                        flexDirection: 'row', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        flexWrap: 'wrap',
+                        gap: '12px'
+                      }}
+                    >
                       {Array.from({ length: flowers }, (_, index) => {
                         const flowerTypes = [
                           'cottagecore-flower-pink',
