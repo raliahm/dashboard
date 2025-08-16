@@ -8,7 +8,16 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "tailwind:init": "tailwindcss init -p"
+    "tailwind:init": "tailwindcss init -p",
+    "security:full": "npm run security:git && npm run security:env && npm run security:deps && npm run security:code",
+    "security:git": "node scripts/git-security-scan.js",
+    "security:env": "node scripts/env-security-check.js",
+    "security:deps": "npm audit --audit-level=moderate",
+    "security:code": "npm run security:eslint && npm run security:secretlint",
+    "security:eslint": "npx eslint --ext .js,.jsx,.ts,.tsx . --config .eslintrc.security.js",
+    "security:secretlint": "npx secretlint \"**/*\"",
+    "security:fix": "npm audit fix",
+    "security:report": "node scripts/generate-security-report.js"
   },
   "dependencies": {
     "@libsql/client": "^0.15.9",
@@ -28,10 +37,14 @@
     "eslint": "^9.30.1",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
+    "eslint-plugin-security": "^1.7.1",
     "globals": "^16.3.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.11",
     "vite": "^7.0.4",
-    "vite-plugin-mock": "^3.0.2"
+    "vite-plugin-mock": "^3.0.2",
+    "@secretlint/secretlint-rule-preset-recommend": "^7.0.0",
+    "secretlint": "^7.0.0",
+    "audit-ci": "^6.6.1"
   }
 }

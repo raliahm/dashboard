@@ -23,5 +23,112 @@ dist-ssr
 *.sln
 *.sw?
 
-
+# Environment variables
 .env
+.env.local
+.env.development
+.env.production
+.env.staging
+.env.test
+frontend/.env*
+backend/.env*
+
+# Security files and directories
+*.key
+*.pem
+*.p12
+*.pfx
+config.json
+secrets.json
+credentials.json
+
+# Security reports and outputs
+security-reports/
+security-report*.json
+env-security-report*.json
+comprehensive-security-report*.json
+security-report-summary*.txt
+secretlint-report*.json
+git-security-scan*.json
+dependency-audit*.json
+*.security.log
+
+# Security scanning tools cache
+.secretlint-cache/
+.eslint-security-cache/
+.audit-ci-cache/
+
+# Development security tools
+scripts/temp/
+scripts/logs/
+security-temp/
+
+# Database files (for local development)
+*.db
+*.sqlite
+*.sqlite3
+database.json
+
+# Cache directories
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.turbo/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE and editor files
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+*.swp
+*.swo
+*~
+
+# Testing
+coverage/
+.nyc_output/
+junit.xml
+
+# Monorepo specific
+lerna-debug.log*
+.rush/
+
+# Build artifacts
+build/
+out/
+.output/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Package manager files
+.pnpm-store/
+.yarn/
+yarn-error.log
+package-lock.json.bak
+
+# Canvas/LMS integration cache
+.canvas-cache/
+canvas-tokens.json
+
+# Google Calendar integration
+google-calendar-cache/
+calendar-tokens.json
+
+# Cottagecore theme assets cache
+.theme-cache/
+generated-assets/
+
+scripts/

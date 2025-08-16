@@ -445,6 +445,15 @@ body, html, #root {
   flex: 1.5 1 500px;
 }
 
+.dashboard-card.course-schedule-card {
+  background: #e0f2fe !important;
+  border-color: #bae6fd !important;
+  min-width: 600px;
+  max-width: 900px;
+  flex: 2 1 600px;
+  padding: 2rem 2rem;
+}
+
 /* Ensure assignments display as a proper list */
 .assignments-list {
   max-height: 600px;
@@ -468,4 +477,61 @@ body, html, #root {
 
 .assignments-list::-webkit-scrollbar-thumb:hover {
   background: #c084fc;
+}
+
+
+/* Habit Tracker & Course Schedule Styles */
+.plant-growth .plant-container {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.animate-fade-in {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Course module animations */
+.course-module {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.course-module:hover {
+  transform: translateY(-2px);
+}
+
+/* Progress bars and growth indicators */
+.growth-bar {
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.growth-fill {
+  box-shadow: 0 1px 2px rgba(34, 197, 94, 0.3);
+}
+
+/* Schedule header decorations */
+.schedule-header::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  width: 40px;
+  height: 40px;
+  background: radial-gradient(circle, rgba(249, 168, 212, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: float 4s ease-in-out infinite;
+}
+
+.schedule-header::after {
+  content: '';
+  position: absolute;
+  bottom: -15px;
+  right: -15px;
+  width: 30px;
+  height: 30px;
+  background: radial-gradient(circle, rgba(192, 132, 252, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: float 5s ease-in-out infinite reverse;
 }

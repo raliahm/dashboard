@@ -1,0 +1,13 @@
+{
+  "low": true,
+  "moderate": true,
+  "high": true,
+  "critical": true,
+  "report-type": "important",
+  "allowlist": [],
+  "skip-dev": false,
+  "output-format": "json",
+  "pass-enoaudit": false,
+  "show-found": true,
+  "summary": true
+}

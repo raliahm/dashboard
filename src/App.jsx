@@ -232,9 +232,10 @@ function Dashboard() {
 
   return (
     <div className="dashboard-outer">
+   
       <div className="dashboard-row">
           {/* Dashboard Header with User Info and Sign Out - Retractable */}
-      <div 
+           <div 
         className={`dashboard-header-retractable ${headerCollapsed ? 'collapsed' : ''}`}
         onClick={() => setHeaderCollapsed(!headerCollapsed)}
       >
@@ -348,6 +349,11 @@ function Dashboard() {
         <div className="dashboard-card assignments-card" style={{ gridColumn: 'span 3', minHeight: '900px', width: '100%' }}>
           <h2 className="text-xl font-bold text-purple-700 mb-4 text-center">📝 Assignments & Exams</h2>
           <AssignmentsTracker user={user} idToken={idToken} />
+        </div>
+        <div className="dashboard-card course-schedule-card" style={{ gridColumn: 'span 3', minHeight: '600px', width: '100%' }}>
+          <h2 className="text-xl font-bold text-blue-700 mb-4 text-center">📅 Course Schedule</h2>
+
+          <CourseSchedule user={user} idToken={idToken} />
         </div>
       </div>
     </div>
@@ -997,6 +1003,7 @@ function AssignmentCard({ assignment, updateAssignmentStatus, deleteAssignment, 
 
 // CalendarPicker: lets user authenticate, lists all calendars, and lets user pick one
 import { useGoogleLogin } from '@react-oauth/google';
+import { CourseSchedule } from './courseSchedule.jsx';
 
 function CalendarPicker() {
   const [accessToken, setAccessToken] = useState(null);
