@@ -212,33 +212,52 @@ export function CourseSchedule() {
   };
 
   const deleteCourse = async (courseId) => {
-    if (savedCourses.length <= 1) {
-      alert('Cannot delete the last course. At least one course must remain.');
-      return;
-    }
+    
 
     if (confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
       try {
         // Delete from database if user is logged in
         if (user && idToken) {
-          const response = await fetch('/api/schedules', {
+          const response = await fetch(`/api/schedules/${courseId}`, {
             method: 'DELETE',
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${idToken}`,
             },
-            body: JSON.stringify({
-              course_id: courseId,
-            }),
           });
           
           if (!response.ok) {
-            throw new Error('Failed to delete schedule from database');
+            const errorData = await response.json();
+            throw new Error(`Failed to delete schedule from database: ${errorData.error || response.statusText}`);
           }
+        }
+        
+        // Clean up localStorage progress data for the deleted course
+        const courseToDelete = savedCourses.find(c => c.id === courseId);
+        if (courseToDelete) {
+          // Parse the course data to get module IDs for cleanup
+          const parsedModules = ScheduleParser.parseScheduleData(courseToDelete.scheduleData, courseId);
+          parsedModules.forEach(module => {
+            localStorage.removeItem(`reading-${module.id}`);
+            localStorage.removeItem(`homework-${module.id}`);
+            localStorage.removeItem(`notes-${module.id}`);
+          });
+          console.log(`🌸 Cleaned up localStorage data for ${parsedModules.length} modules in course ${courseId}`);
         }
         
         const updatedCourses = savedCourses.filter(c => c.id !== courseId);
         setSavedCourses(updatedCourses);
+        
+        // Clear progress stats for the deleted course
+        setProgressStats(prev => {
+          const newStats = { ...prev };
+          Object.keys(newStats).forEach(moduleId => {
+            if (moduleId.startsWith(courseId)) {
+              delete newStats[moduleId];
+            }
+          });
+          return newStats;
+        });
         
         // Update localStorage as fallback
         localStorage.setItem('savedCourses', JSON.stringify(updatedCourses));
