@@ -378,9 +378,9 @@ export function CourseSchedule() {
       <div className="course-schedule-wrapper bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-2xl p-8 border-2 border-blue-200 shadow-lg w-full">
         <div className="welcome-screen text-center">
           <div className="mb-6">
-            <span className="text-6xl mb-4 block animate-bounce">📚</span>
+           
             <h2 className="text-3xl font-bold text-blue-700 mb-2">
-              Welcome to Course Schedules
+              <span className="text-6xl mb-4 block animate-bounce">📚</span> Welcome to Course Schedules
             </h2>
             <p className="text-blue-600 text-lg font-medium mb-6">
               {!user ? 'Sign in and upload your first course schedule to get started!' : 'Upload your first course schedule to get started!'}
@@ -452,9 +452,7 @@ Thu 8/21	Basic Concepts	Ch. 3	Assignment 1 due	Week 1`}
       <div className="course-management mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
-            <h2 className="text-2xl font-bold text-blue-700 flex items-center gap-2">
-              📚 Course Schedules
-            </h2>
+         
             <select
               value={activeCourseId || ''}
               onChange={(e) => {
@@ -571,6 +569,36 @@ Thu 8/21	Basic Concepts	Ch. 3	Assignment 1 due	Week 1`}
                 Clear 🌸
               </button>
             )}
+              {/* Course Progress Garden */}
+      {modules.length > 0 && (
+        <div className="progress-garden mt-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-4 border-2 border-green-200">
+          <h4 className="font-semibold text-green-700 mb-3 text-center flex items-center justify-center gap-2">
+            🌻 Your Learning Garden
+          </h4>
+          <div className="garden-progress flex justify-center gap-2 flex-wrap">
+            {modules.slice(0, 15).map((module, index) => {
+              const progress = progressStats[module.id];
+              const isActive = progress?.readingProgress > 0 || progress?.homeworkStatus !== 'not-started';
+              return (
+                <div
+                  key={module.id}
+                  className={`garden-plant text-2xl transition-all duration-500 transform hover:scale-125 ${
+                    isActive ? 'animate-pulse' : 'opacity-50'
+                  }`}
+                  title={`${module.topics} - ${isActive ? 'Growing!' : 'Waiting to grow'}`}
+                >
+                  {module.status === 'completed' ? '🌺' : 
+                   module.status === 'current' ? '🌸' : 
+                   isActive ? '🌱' : '🌰'}
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-center text-green-600 text-xs mt-2 font-medium">
+            Complete readings and assignments to grow your garden! 🌿
+          </p>
+        </div>
+      )}
           </div>
         </div>
       )}
@@ -613,36 +641,7 @@ Thu 8/21	Basic Concepts	Ch. 3	Assignment 1 due	Week 1`}
         ) : null}
       </div>
 
-      {/* Course Progress Garden */}
-      {modules.length > 0 && (
-        <div className="progress-garden mt-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-4 border-2 border-green-200">
-          <h4 className="font-semibold text-green-700 mb-3 text-center flex items-center justify-center gap-2">
-            🌻 Your Learning Garden
-          </h4>
-          <div className="garden-progress flex justify-center gap-2 flex-wrap">
-            {modules.slice(0, 15).map((module, index) => {
-              const progress = progressStats[module.id];
-              const isActive = progress?.readingProgress > 0 || progress?.homeworkStatus !== 'not-started';
-              return (
-                <div
-                  key={module.id}
-                  className={`garden-plant text-2xl transition-all duration-500 transform hover:scale-125 ${
-                    isActive ? 'animate-pulse' : 'opacity-50'
-                  }`}
-                  title={`${module.topics} - ${isActive ? 'Growing!' : 'Waiting to grow'}`}
-                >
-                  {module.status === 'completed' ? '🌺' : 
-                   module.status === 'current' ? '🌸' : 
-                   isActive ? '🌱' : '🌰'}
-                </div>
-              );
-            })}
-          </div>
-          <p className="text-center text-green-600 text-xs mt-2 font-medium">
-            Complete readings and assignments to grow your garden! 🌿
-          </p>
-        </div>
-      )}
+    
     </div>
   );
 }

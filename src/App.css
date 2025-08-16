@@ -535,3 +535,142 @@ body, html, #root {
   border-radius: 50%;
   animation: float 5s ease-in-out infinite reverse;
 }
+
+/* Game UI Elements for Plant Growth */
+.game-health-bar {
+  position: relative;
+  width: 64px;
+  height: 16px;
+  background: linear-gradient(to bottom, #8B4513 0%, #A0522D 50%, #8B4513 100%);
+  border: 2px solid #654321;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.game-health-fill {
+  height: 100%;
+  background: linear-gradient(to right, 
+    #ff6b6b 0%,   /* Red start */
+    #feca57 30%,  /* Orange middle */
+    #48cab3 60%,  /* Teal */
+    #55a3ff 100%  /* Blue end */
+  );
+  border-radius: 6px;
+  position: relative;
+  transition: width 0.8s ease-out;
+}
+
+.game-health-fill::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  height: 40%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
+  border-radius: 4px;
+}
+
+.game-potion {
+  position: relative;
+  width: 24px;
+  height: 32px;
+  background: linear-gradient(to bottom, 
+    transparent 0%, 
+    transparent 25%,
+    #d4a574 25%,
+    #b8956a 35%,
+    #b8956a 65%,
+    #d4a574 75%,
+    #d4a574 100%
+  );
+  border-radius: 0 0 12px 12px;
+  margin: 0 auto;
+}
+
+.game-potion::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 12px;
+  background: #d4a574;
+  border-radius: 4px 4px 0 0;
+}
+
+.game-potion-fill {
+  position: absolute;
+  bottom: 0;
+  left: 2px;
+  right: 2px;
+  background: linear-gradient(to top,
+    #4ecdc4 0%,
+    #44a08d 50%,
+    #96ceb4 100%
+  );
+  border-radius: 0 0 10px 10px;
+  transition: height 0.8s ease-out;
+}
+
+.game-potion-empty {
+  background: linear-gradient(to top, 
+    rgba(200, 200, 200, 0.3) 0%,
+    transparent 100%
+  );
+}
+
+.game-potion-bubbles {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  width: 3px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  animation: bubble 2s infinite ease-in-out;
+}
+
+.game-potion-bubbles::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: -4px;
+  width: 2px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  animation: bubble 2.5s infinite ease-in-out;
+}
+
+@keyframes bubble {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(-8px) scale(1.2);
+    opacity: 1;
+  }
+}
+
+.plant-growth {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.plant-growth:hover {
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+  transform: translateY(-1px);
+}
+
+.hearts-display {
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+}
+
+.progress-bar-container {
+  background: linear-gradient(to bottom, #f4e4c1 0%, #e8d5b7 50%, #d4c5a9 100%);
+  border: 2px solid #8b7355;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2), 0 1px 2px rgba(0,0,0,0.1);
+}
